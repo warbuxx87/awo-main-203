@@ -8,7 +8,7 @@ Live analytics dashboard for the **Alpha Wolves** Total Battle clan. Reads the c
 ![Netlify](https://img.shields.io/badge/deploy-Netlify-00C7B7?logo=netlify&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-informational)
+![Version](https://img.shields.io/badge/version-1.1.0-informational)
 
 ---
 
@@ -65,6 +65,10 @@ The History view is scaffolded for recurring events. When a cycle closes:
    ];
    ```
 3. Commit and push — cycle-over-cycle comparison turns on automatically once there's history.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md). Versioning follows [SemVer](https://semver.org); commits follow [Conventional Commits](https://www.conventionalcommits.org).
 
 ## License
 

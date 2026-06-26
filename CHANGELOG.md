@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - 2026-06-26
+
+Alpha Wolves brand identity.
+
+### Added
+- Real **ALPHA WOLVES** wordmark embedded in the header (self-contained data URI); gold wolf favicon and PWA icon.
+- Two-metal chart language — **gold = points**, **silver = opens** — mirroring the logo's gold-and-silver lettering.
+- Clan voice throughout: status labels **Hunting / Lagging / Idle**, "The Pack" leaderboard, "Wolves move as one." in the footer.
+
+### Changed
+- Palette retuned to the brand, sampled from the logo and site: warm near-black `#0A0706`, gold `#CA883C`, silver-chrome `#CBC2B5`, amber wolf-eye accents, with a faint firelight glow.
+- Typography moved to **Cinzel** (engraved caps) for headings, labels, and figures and **EB Garamond** for body, matching the site.
+- Pace-line signature recoloured to chrome so it reads cleanly against the gold fills.
+
+## [1.0.0] - 2026-06-26
+
+Initial release.
+
+### Added
+- Live dashboard reading the `[AWO] Alpha Wolves` Google Sheet via the gviz API — **Overview**, **Leaderboard**, **Chests**, and **History** views.
+- Scores **recomputed client-side** from `ChestMatrix × Points`, independent of the summary tab (immune to roster mismatch and column drift).
+- Quota compliance against the 4,000-pts/day requirement, per-player points attribution, and wasted-opens analysis.
+- Signature **pace-line** progress indicator (clan goal and per-hunter quota), player profile modal with attribution chart.
+- Archive scaffolding (`ARCHIVE_SHEETS`) for recurring cycles.
+- Embedded snapshot fallback for offline/preview rendering; PWA-installable; `noindex`.
+
+[1.1.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.1.0
+[1.0.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.0.0
