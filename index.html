@@ -277,6 +277,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.6.1", date:"2026-06-26", sections:[
+    { label:"Fixed", items:["Quota labels now read the per-day target from the sheet instead of a hardcoded 4k."] }
+  ]},
   { version:"1.6.0", date:"2026-06-26", sections:[
     { label:"Added", items:["**Installable PWA** — service worker, manifest, and an Install button."] }
   ]},
@@ -638,6 +641,7 @@ function compute(summary,matrix,points){
    ============================================================ */
 const $=s=>document.querySelector(s);
 const fmt=n=>Math.round(n).toLocaleString("en-US");
+const kfmt=n=>{n=Math.round(n);if(n>=1000){const k=n/1000;return (Number.isInteger(k)?k:k.toFixed(1))+"k";}return n.toLocaleString("en-US");};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const badge=st=>({hunt:'<span class="badge b-hunt">Hunting</span>',
                   lag:'<span class="badge b-lag">Lagging</span>',
@@ -692,7 +696,7 @@ function viewOverview(s){
     +'</div>'
     +'<div class="kpis" style="grid-template-columns:repeat(2,1fr);align-content:start">'
       +kpi(fmt(s.active),"Hunters scoring")
-      +kpi(fmt(s.onQuota),"Meeting 4k/day",true)
+      +kpi(fmt(s.onQuota),"Meeting "+kfmt(s.summary.perDay)+"/day",true)
       +kpi(fmt(s.clanChests),"Chests opened")
       +kpi(fmt(s.idle),"Idle in the pack")
     +'</div>'
@@ -731,7 +735,7 @@ function viewLeaderboard(s){
   const cols=[
     {k:"rank",t:"#",l:true},{k:"name",t:"Hunter",l:true},
     {k:"value",t:"Points"},{k:"count",t:"Chests"},{k:"eff",t:"Pts / chest"},
-    {k:"pace",t:"Pace / day"},{k:"quota",t:"Vs 4k quota",l:true},{k:"status",t:"Status",l:true}
+    {k:"pace",t:"Pace / day"},{k:"quota",t:"Vs "+kfmt(s.summary.perDay)+" quota",l:true},{k:"status",t:"Status",l:true}
   ];
   const arr=[...s.players].sort((a,b)=>{
     let x=a[SORT.key],y=b[SORT.key];
@@ -764,7 +768,7 @@ function viewLeaderboard(s){
   }
   return h+'</tbody></table></div>'
     +'<div id="lbNoMatch" class="empty" style="display:none">No hunter by that name.</div>'
-    +'<p class="dim" style="font-size:12.5px;margin-top:12px">Pace = points ÷ days elapsed. The amber line marks the 4,000-pts/day quota; bars that reach it are on track.</p></div>';
+    +'<p class="dim" style="font-size:12.5px;margin-top:12px">Pace = points ÷ days elapsed. The amber line marks the '+fmt(s.summary.perDay)+'-pts/day quota; bars that reach it are on track.</p></div>';
 }
 
 let CHSORT={key:"pts",dir:-1};
@@ -880,7 +884,7 @@ function openPlayer(name){
     +'</div>'
     +'<div class="bar '+(p.status==="hunt"?'good':'')+'" style="margin-top:4px">'
       +'<div class="fill" style="width:'+pacePct+'%"></div><div class="pace" style="left:100%"></div></div>'
-    +'<p class="dim" style="font-size:12px;margin:8px 2px 0">Bar = today\'s pace vs the 4,000/day quota (amber line).</p>'
+    +'<p class="dim" style="font-size:12px;margin:8px 2px 0">Bar = today\'s pace vs the '+fmt(STATE.summary.perDay)+'/day quota (amber line).</p>'
     +(p.bySource.length?'<p class="eyebrow" style="margin-top:20px">Points attribution</p><div id="attrChart" class="attr"></div>'
       +'<div class="tbl-wrap"><table><tbody>'+attr+'</tbody></table></div>':'')
     +(p.wastedOpens?'<p class="dim" style="margin-top:14px;font-size:13px"><span class="wasted">'+fmt(p.wastedOpens)+' chests</span> opened on zero-point sources.</p>':'');
