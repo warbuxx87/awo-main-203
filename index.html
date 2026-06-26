@@ -64,6 +64,8 @@
   .clock{text-align:right;line-height:1.05}
   .clock .lbl{font-family:"Cinzel",serif;letter-spacing:.2em;font-size:9px;color:var(--silver);text-transform:uppercase}
   .clock .val{font-family:"Cinzel",serif;font-weight:700;font-size:16px;color:var(--gold-hi);font-feature-settings:"lnum" 1,"tnum" 1}
+  .nextsync{font-family:"Cinzel",serif;letter-spacing:.12em;font-size:10px;color:var(--silver);text-transform:uppercase;white-space:nowrap;align-self:center;font-feature-settings:"lnum" 1,"tnum" 1;opacity:.85}
+  .nextsync:empty{display:none}
   .refresh{border:1px solid var(--line);background:var(--pelt);color:var(--frost);
     border-radius:var(--r-sm);padding:7px 12px;cursor:pointer;font-family:"Cinzel",serif;
     letter-spacing:.12em;font-size:11px;text-transform:uppercase;display:flex;gap:8px;align-items:center;
@@ -228,6 +230,7 @@
       <div class="val" id="countdown">—</div>
     </div>
     <button class="refresh installbtn" id="installBtn" hidden title="Install app"><span>Install</span></button>
+    <div class="nextsync" id="nextSync" title="Time until the dashboard re-checks the sheet for new data"></div>
     <button class="refresh" id="refreshBtn" title="Reload from the sheet">
       <span class="dot"></span><span>Refresh</span>
     </button>
@@ -277,6 +280,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.7.0", date:"2026-06-26", sections:[
+    { label:"Added", items:["Live **Next sync** countdown to the next data refresh in the header."] }
+  ]},
   { version:"1.6.1", date:"2026-06-26", sections:[
     { label:"Fixed", items:["Quota labels now read the per-day target from the sheet instead of a hardcoded 4k."] }
   ]},
@@ -314,7 +320,7 @@ const FALLBACK_GOAL     = 100000;  // clan point goal
 const SCRAPE_INTERVAL    = 2 * 60 * 60 * 1000; // 2 hours
 const POST_SCRAPE_BUFFER = 2 * 60 * 1000;      // re-check ~2 min after the expected scrape
 const RETRY_MS           = 10 * 60 * 1000;     // late scrape / first load → re-check every 10 min until fresh
-let refreshTimer=null, lastUpdatedKey=null;
+let refreshTimer=null, lastUpdatedKey=null, nextRefreshAt=0;
 
 /* Embedded fallback: lets the in-chat preview render when the sandbox blocks
    cross-site fetch to Google. Live fetch is always tried first. */
@@ -1040,13 +1046,32 @@ window.addEventListener("resize",()=>{ distChart&&distChart.resize(); attrChart&
    COUNTDOWN
    ============================================================ */
 function tickClock(){
-  const el=$("#countdown"); if(!el||!STATE||!STATE.summary.end) return;
-  let d=STATE.summary.end-new Date();
-  if(d<=0){ el.textContent="ENDED"; return; }
-  const days=Math.floor(d/DAY); d-=days*DAY;
-  const h=Math.floor(d/3.6e6); d-=h*3.6e6;
-  const m=Math.floor(d/6e4);
-  el.textContent=(days?days+"d ":"")+String(h).padStart(2,"0")+"h "+String(m).padStart(2,"0")+"m";
+  const el=$("#countdown");
+  if(el && STATE && STATE.summary.end){
+    let d=STATE.summary.end-new Date();
+    if(d<=0){ el.textContent="ENDED"; }
+    else{
+      const days=Math.floor(d/DAY); d-=days*DAY;
+      const h=Math.floor(d/3.6e6); d-=h*3.6e6;
+      const m=Math.floor(d/6e4);
+      el.textContent=(days?days+"d ":"")+String(h).padStart(2,"0")+"h "+String(m).padStart(2,"0")+"m";
+    }
+  }
+  // countdown to the next data refresh (synced to the ~2h scrape cadence)
+  const ns=$("#nextSync");
+  if(ns){
+    if(!nextRefreshAt){ ns.textContent=""; }
+    else{
+      let left=Math.round((nextRefreshAt-Date.now())/1000);
+      if(left<=0){ ns.textContent="Syncing…"; }
+      else{
+        const h=Math.floor(left/3600); left-=h*3600;
+        const m=Math.floor(left/60); const s=left-m*60;
+        const p=n=>String(n).padStart(2,"0");
+        ns.textContent="Next sync "+(h?h+":"+p(m)+":"+p(s):m+":"+p(s));
+      }
+    }
+  }
 }
 setInterval(tickClock,1000);
 
@@ -1086,8 +1111,10 @@ async function load(){
 }
 function scheduleRefresh(fresh){
   clearTimeout(refreshTimer);
-  const delay = fresh ? (SCRAPE_INTERVAL + POST_SCRAPE_BUFFER) : RETRY_MS;
-  refreshTimer = setTimeout(load, Math.max(delay, 60*1000));
+  // fresh scrape just landed → next one ~2h out; otherwise re-check soon (late scrape / first load)
+  const delay = Math.max(fresh ? (SCRAPE_INTERVAL + POST_SCRAPE_BUFFER) : RETRY_MS, 60*1000);
+  nextRefreshAt = Date.now() + delay;
+  refreshTimer = setTimeout(load, delay);
 }
 $("#refreshBtn").addEventListener("click",load);
 
