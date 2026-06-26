@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-26
+
+### Added
+- Events tab: event/monster-chest participation tracking and per-event leaderboards, driven by an editable `EVENT_GROUPS` config.
+
 ## [1.2.0] - 2026-06-26
 
 ### Added
@@ -41,6 +46,7 @@ Initial release.
 - Archive scaffolding (`ARCHIVE_SHEETS`) for recurring cycles.
 - Embedded snapshot fallback for offline/preview rendering; PWA-installable; `noindex`.
 
+[1.3.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.3.0
 [1.2.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.2.0
 [1.1.1]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.1.1
 [1.1.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.1.0

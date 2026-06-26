@@ -180,6 +180,15 @@
   #lbSearch::placeholder{color:var(--silver)}
   #lbSearch:focus{outline:none;border-color:var(--ice);box-shadow:0 0 0 2px rgba(202,136,60,.2)}
   .filter-hint{font-family:"Cinzel",serif;letter-spacing:.12em;text-transform:uppercase;font-size:10px;color:var(--silver)}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.1em;font-size:11px;
+    color:var(--silver);background:var(--pelt-2);border:1px solid var(--line);border-radius:20px;
+    padding:7px 15px;cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+  .pill:hover{color:var(--frost);border-color:var(--ice-dim)}
+  .pill.on{color:var(--night);background:linear-gradient(180deg,var(--gold-hi),var(--ice));border-color:var(--ice)}
+  .evttoggle{font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.1em;font-size:10px;
+    color:var(--silver);display:flex;align-items:center;gap:8px;cursor:pointer}
+  .evttoggle input{accent-color:var(--ice)}
 </style>
 </head>
 <body>
@@ -209,6 +218,7 @@
   <nav class="tabs" id="nav">
     <a href="#overview">Overview</a>
     <a href="#leaderboard">The Pack</a>
+    <a href="#events">Events</a>
     <a href="#chests">Chests</a>
     <a href="#history">History</a>
   </nav>
@@ -237,6 +247,15 @@ const TABS = {
 /* When a cycle ends, archive its sheet and PREPEND it here (newest first):
    { id:"<sheetId>", label:"Jun 24 – Jul 1" }  */
 const ARCHIVE_SHEETS = [];
+
+const EVENT_GROUPS = [
+  { id:"darkomens",   label:"Dark Omens",           match:["dark omens"] },
+  { id:"ancients",    label:"Rise of the Ancients", match:["rise of the ancients"] },
+  { id:"dread",       label:"Spoils of Dread",      match:["spoils of dread"] },
+  { id:"sakura",      label:"Sakura of Plenty",     match:["sakura"] },
+  { id:"monsters",    label:"Epic & Monsters",      match:["monster","squad","epic ancient"] },
+  { id:"tournaments", label:"Tournaments",          match:["tournament"] }
+];
 
 const FALLBACK_PER_DAY = 4000;     // per-hunter daily quota
 const FALLBACK_GOAL     = 100000;  // clan point goal
@@ -529,7 +548,7 @@ function compute(summary,matrix,points){
     let status="idle";
     if(value>0) status = pace>=summary.perDay ? "hunt" : "lag";
     return {
-      name:p.name, value, count:p.total,
+      name:p.name, value, count:p.total, counts:p.counts,
       eff: p.total? value/p.total : 0,
       pace, status, bySource, wastedOpens
     };
@@ -822,10 +841,69 @@ function closePlayer(){ $("#scrim").classList.remove("open"); attrChart&&attrCha
 $("#scrim").addEventListener("click",e=>{ if(e.target.id==="scrim") closePlayer(); });
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closePlayer(); });
 
+let EVTSEL = EVENT_GROUPS.length ? EVENT_GROUPS[0].id : null;
+let EVTZEROS = false;
+
+function viewEvents(s){
+  if(!EVENT_GROUPS.length)
+    return '<div class="panel"><div class="empty">No event groups configured.</div></div>';
+  const grp = EVENT_GROUPS.find(g=>g.id===EVTSEL) || EVENT_GROUPS[0];
+  const inGroup = src => grp.match.some(m=>src.toLowerCase().includes(m.toLowerCase()));
+  const groupSources = s.sources.filter(d=>inGroup(d.src));
+  const clanOpens = groupSources.reduce((x,d)=>x+d.opens,0);
+  const ranked = s.players.map(p=>{
+    let opens=0;
+    for(const d of groupSources) opens += (p.counts && p.counts[d.src]) || 0;
+    return { name:p.name, opens };
+  }).sort((a,b)=>b.opens-a.opens);
+  const participants = ranked.filter(p=>p.opens>0);
+  const top = participants[0];
+  const pills = EVENT_GROUPS.map(g=>
+    '<button class="pill'+(g.id===grp.id?' on':'')+'" data-evt="'+g.id+'">'+esc(g.label)+'</button>').join('');
+  let h='<div class="panel"><p class="eyebrow">Event participation</p>'
+    +'<div class="pills">'+pills+'</div>';
+  if(!groupSources.length)
+    return h+'<div class="empty" style="margin-top:10px">No chests from <b>'+esc(grp.label)+'</b> have been opened yet.</div></div>';
+  h+='<div class="kpis" style="margin-top:18px;grid-template-columns:repeat(4,1fr)">'
+    +kpi(fmt(clanOpens),"Chests opened")
+    +kpi(fmt(participants.length)+' / '+fmt(s.players.length),"Participated",true)
+    +kpi(fmt(s.players.length-participants.length),"Sat out")
+    +kpi(top?esc(top.name):'—',"Top opener")
+   +'</div>';
+  if(groupSources.length>1){
+    const srcRows=[...groupSources].sort((a,b)=>b.opens-a.opens).map(d=>
+      '<tr><td class="l">'+esc(d.src)+'</td><td class="num">'+fmt(d.opens)+'</td></tr>').join('');
+    h+='<p class="eyebrow" style="margin-top:22px">Sources in this event</p>'
+      +'<div class="tbl-wrap"><table><tbody>'+srcRows+'</tbody></table></div>';
+  }
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap;gap:10px">'
+    +'<h2 class="sec" style="margin:0">'+esc(grp.label)+' leaderboard</h2>'
+    +'<label class="evttoggle"><input type="checkbox" id="evtZeros"'+(EVTZEROS?' checked':'')+' /> show hunters who sat out</label>'
+   +'</div>';
+  const list = EVTZEROS ? ranked : participants;
+  const maxOpens = participants.length ? participants[0].opens : 1;
+  let rows='';
+  list.forEach((p,i)=>{
+    const pct = clanOpens ? p.opens/clanOpens*100 : 0;
+    const barpct = maxOpens ? p.opens/maxOpens*100 : 0;
+    rows+='<tr class="clickable" data-p="'+esc(p.name)+'">'
+      +'<td class="l rank">'+(i+1)+'</td>'
+      +'<td class="l" dir="auto"><span class="pname">'+esc(p.name)+'</span></td>'
+      +'<td class="num" style="color:var(--moon);font-weight:600">'+fmt(p.opens)+'</td>'
+      +'<td class="l" style="width:130px"><span class="qbar"><span class="qf" style="width:'+barpct+'%"></span></span></td>'
+      +'<td class="num dim">'+(pct>=0.05?pct.toFixed(1)+'%':'—')+'</td>'
+      +'<td class="l">'+(p.opens>0?'<span class="badge b-hunt">In</span>':'<span class="badge b-idle">Out</span>')+'</td></tr>';
+  });
+  h+='<div class="tbl-wrap"><table><thead><tr>'
+    +'<th class="l">#</th><th class="l">Hunter</th><th>Opens</th><th class="l">Relative</th><th>% of event</th><th class="l">Status</th>'
+    +'</tr></thead><tbody id="evtBody">'+rows+'</tbody></table></div>';
+  return h+'</div>';
+}
+
 /* ============================================================
    ROUTER
    ============================================================ */
-const ROUTES={overview:viewOverview,leaderboard:viewLeaderboard,chests:viewChests,history:viewHistory};
+const ROUTES={overview:viewOverview,leaderboard:viewLeaderboard,events:viewEvents,chests:viewChests,history:viewHistory};
 function route(){
   if(!STATE) return;
   const hash=(location.hash.replace("#","")||"overview");
@@ -846,6 +924,13 @@ function wire(hash){
     }));
     const lb=document.getElementById("lbSearch");
     if(lb){ lb.addEventListener("input",applyLBFilter); applyLBFilter(); }
+  }
+  if(hash==="events"){
+    document.querySelectorAll(".pill[data-evt]").forEach(b=>b.addEventListener("click",()=>{
+      EVTSEL=b.getAttribute("data-evt"); route();
+    }));
+    const z=document.getElementById("evtZeros");
+    if(z) z.addEventListener("change",()=>{ EVTZEROS=z.checked; route(); });
   }
   if(hash==="chests")
     document.querySelectorAll("th[data-ck]").forEach(th=>th.addEventListener("click",()=>{
