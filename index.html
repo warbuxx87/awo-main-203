@@ -6,8 +6,11 @@
 <meta name="robots" content="noindex, nofollow" />
 <meta name="theme-color" content="#0A0706" />
 <title>[AWO] Alpha Wolves — Hunt Tracker</title>
-<link rel="manifest" href='data:application/manifest+json,{"name":"AWO Hunt Tracker","short_name":"AWO","display":"standalone","background_color":"%230A0706","theme_color":"%230A0706","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpolygon points=%2210,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30%22 fill=%22%23CA883C%22/%3E%3Cpolygon points=%2220,28 27,26 25,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2244,28 37,26 39,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2232,40 28,45 36,45%22 fill=%22%230A0706%22/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}' />
+<link rel="manifest" href="./manifest.json" />
 <link rel="icon" href='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpolygon points=%2210,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30%22 fill=%22%23CA883C%22/%3E%3Cpolygon points=%2220,28 27,26 25,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2244,28 37,26 39,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2232,40 28,45 36,45%22 fill=%22%230A0706%22/%3E%3C/svg%3E' />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="AWO" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
@@ -202,6 +205,8 @@
   .cl-list{margin:0 0 6px;padding-left:18px}
   .cl-list li{margin:4px 0;font-size:14.5px;color:var(--frost)}
   .cl-list code{font-family:"EB Garamond",serif;color:var(--gold-hi);font-style:italic}
+  .installbtn{border-color:var(--ice-dim);color:var(--gold-hi)}
+  #installBtn[hidden]{display:none !important}
 </style>
 </head>
 <body>
@@ -222,6 +227,7 @@
       <div class="lbl">Hunt ends in</div>
       <div class="val" id="countdown">—</div>
     </div>
+    <button class="refresh installbtn" id="installBtn" hidden title="Install app"><span>Install</span></button>
     <button class="refresh" id="refreshBtn" title="Reload from the sheet">
       <span class="dot"></span><span>Refresh</span>
     </button>
@@ -271,6 +277,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.6.0", date:"2026-06-26", sections:[
+    { label:"Added", items:["**Installable PWA** — service worker, manifest, and an Install button."] }
+  ]},
   { version:"1.5.0", date:"2026-06-26", sections:[
     { label:"Changed", items:["Auto-refresh now syncs to the ~2h scrape cadence instead of polling every 10 min."] }
   ]},
@@ -1083,7 +1092,7 @@ $("#refreshBtn").addEventListener("click",load);
   const f=document.createElement("footer"); f.className="wrap";
   f.style.cssText="max-width:1180px;margin:28px auto 0;padding:16px 18px 0";
   f.innerHTML='Live from <code>[AWO] Alpha Wolves</code> via Google Sheets · points recomputed from '
-    +'<code>ChestMatrix × Points</code>, independent of the summary tab · auto-refreshes every 10 min. · <span style="color:var(--ice)">Wolves move as one.</span>';
+    +'<code>ChestMatrix × Points</code>, independent of the summary tab · auto-refreshes on the ~2h scrape cadence. · <span style="color:var(--ice)">Wolves move as one.</span>';
   document.querySelector(".wrap").appendChild(f);
 })();
 
@@ -1094,6 +1103,23 @@ $("#refreshBtn").addEventListener("click",load);
     vc.addEventListener("click",openChangelog);
   }
 })();
+
+if("serviceWorker" in navigator)
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const b=document.getElementById("installBtn"); if(b) b.hidden=false;
+});
+(function(){
+  const b=document.getElementById("installBtn"); if(!b) return;
+  b.addEventListener("click",async()=>{
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt(); await deferredPrompt.userChoice;
+    deferredPrompt=null; b.hidden=true;
+  });
+})();
+window.addEventListener("appinstalled",()=>{ const b=document.getElementById("installBtn"); if(b) b.hidden=true; });
 
 load();
 

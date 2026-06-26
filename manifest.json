@@ -1,0 +1,18 @@
+{
+  "name": "AWO Hunt Tracker",
+  "short_name": "AWO",
+  "description": "Alpha Wolves clan hunt tracker",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0A0706",
+  "theme_color": "#0A0706",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpolygon points=%2210,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30%22 fill=%22%23CA883C%22/%3E%3Cpolygon points=%2220,28 27,26 25,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2244,28 37,26 39,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2232,40 28,45 36,45%22 fill=%22%230A0706%22/%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
