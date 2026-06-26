@@ -271,6 +271,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.5.0", date:"2026-06-26", sections:[
+    { label:"Changed", items:["Auto-refresh now syncs to the ~2h scrape cadence instead of polling every 10 min."] }
+  ]},
   { version:"1.4.0", date:"2026-06-26", sections:[
     { label:"Added", items:["**In-app changelog** — click the version chip in the header to view release notes."] }
   ]},
@@ -296,7 +299,10 @@ const CHANGELOG = [
 
 const FALLBACK_PER_DAY = 4000;     // per-hunter daily quota
 const FALLBACK_GOAL     = 100000;  // clan point goal
-const REFRESH_MS = 10 * 60 * 1000; // 10 min auto-refresh
+const SCRAPE_INTERVAL    = 2 * 60 * 60 * 1000; // 2 hours
+const POST_SCRAPE_BUFFER = 2 * 60 * 1000;      // re-check ~2 min after the expected scrape
+const RETRY_MS           = 10 * 60 * 1000;     // late scrape / first load → re-check every 10 min until fresh
+let refreshTimer=null, lastUpdatedKey=null;
 
 /* Embedded fallback: lets the in-chat preview render when the sandbox blocks
    cross-site fetch to Google. Live fetch is always tried first. */
@@ -1053,15 +1059,24 @@ async function load(){
     $("#app").classList.remove("hidden");
     renderBanner();
     route(); tickClock();
+    const key = STATE.summary.updated ? STATE.summary.updated.getTime() : null;
+    const fresh = key!==null && lastUpdatedKey!==null && key!==lastUpdatedKey;
+    lastUpdatedKey = key;
+    scheduleRefresh(fresh);
   }catch(err){
     $("#boot").classList.remove("hidden"); $("#boot").classList.add("err");
     $("#boot").innerHTML='<div class="panel err" style="text-align:left">'
       +'<h2 class="sec" style="color:var(--idle)">Couldn\'t load the data</h2>'
       +'<p class="dim">'+esc(err.message)+'</p></div>';
+    scheduleRefresh(false);
   }finally{ btn&&btn.classList.remove("spin"); }
 }
+function scheduleRefresh(fresh){
+  clearTimeout(refreshTimer);
+  const delay = fresh ? (SCRAPE_INTERVAL + POST_SCRAPE_BUFFER) : RETRY_MS;
+  refreshTimer = setTimeout(load, Math.max(delay, 60*1000));
+}
 $("#refreshBtn").addEventListener("click",load);
-setInterval(load,REFRESH_MS);
 
 /* footer (static) */
 (function(){
