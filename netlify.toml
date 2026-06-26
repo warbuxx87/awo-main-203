@@ -1,0 +1,16 @@
+# Netlify config — static single-file site, no build step.
+[build]
+  publish = "."
+  command = ""
+
+# Keep the clan tool out of search engines (matches the in-page noindex meta).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+# Single-page app fallback: any path serves the dashboard.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

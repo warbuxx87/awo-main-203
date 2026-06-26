@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0B0F14" />
+<title>[AWO] Alpha Wolves — Hunt Tracker</title>
+
+<!-- PWA manifest (inline data URI) -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"AWO Hunt Tracker","short_name":"AWO","display":"standalone","background_color":"%230B0F14","theme_color":"%230B0F14","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 fill=%22%230B0F14%22/%3E%3Cpolygon points=%2210,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30%22 fill=%22%23C9D6E3%22/%3E%3Cpolygon points=%2220,28 27,26 25,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2244,28 37,26 39,32%22 fill=%22%23E8A33D%22/%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}' />
+<link rel="icon" href='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cpolygon points=%2210,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30%22 fill=%22%23C9D6E3%22/%3E%3Cpolygon points=%2220,28 27,26 25,32%22 fill=%22%23E8A33D%22/%3E%3Cpolygon points=%2244,28 37,26 39,32%22 fill=%22%23E8A33D%22/%3E%3C/svg%3E' />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+
+<style>
+  :root{
+    --night:#0B0F14;       /* deep night base            */
+    --pelt:#161D26;        /* panel / wolf-pelt slate     */
+    --pelt-2:#1E2733;      /* raised panel                */
+    --line:#2A3542;        /* hairline                    */
+    --moon:#E8EEF4;        /* bright headline             */
+    --frost:#C9D6E3;       /* primary text                */
+    --silver:#7E8C9E;      /* muted / fur gray            */
+    --ice:#5FA8D3;         /* cold accent — performance   */
+    --ice-dim:#33617d;
+    --ember:#E8A33D;       /* warm accent — attention     */
+    --hunt:#4FB286;        /* on-quota                    */
+    --lag:#E8A33D;         /* behind                      */
+    --idle:#C75B5B;        /* zero                        */
+    --r:14px;
+    --r-sm:9px;
+    --gap:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 70% -10%, #11202b 0%, transparent 55%),
+      radial-gradient(900px 500px at 0% 0%, #15131f 0%, transparent 50%),
+      var(--night);
+    color:var(--frost);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:var(--ice);text-decoration:none}
+  ::selection{background:var(--ice);color:var(--night)}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px 64px}
+
+  /* ---------- header ---------- */
+  header.top{
+    position:sticky;top:0;z-index:40;
+    background:rgba(11,15,20,.82);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .top-in{max-width:1180px;margin:0 auto;padding:11px 18px;display:flex;align-items:center;gap:14px}
+  .sigil{width:34px;height:34px;flex:0 0 auto}
+  .brand{display:flex;flex-direction:column;line-height:1.05}
+  .brand .tag{font-family:"Oswald";font-weight:600;letter-spacing:.14em;font-size:11px;color:var(--silver)}
+  .brand .name{font-family:"Oswald";font-weight:600;letter-spacing:.04em;font-size:18px;color:var(--moon);text-transform:uppercase}
+  .top-spacer{flex:1}
+  .clock{text-align:right;line-height:1.1}
+  .clock .lbl{font-family:"Oswald";letter-spacing:.16em;font-size:9.5px;color:var(--silver);text-transform:uppercase}
+  .clock .val{font-family:"JetBrains Mono";font-weight:700;font-size:15px;color:var(--ember)}
+  .refresh{
+    border:1px solid var(--line);background:var(--pelt);color:var(--frost);
+    border-radius:var(--r-sm);padding:7px 11px;cursor:pointer;font-family:"Oswald";
+    letter-spacing:.08em;font-size:12px;text-transform:uppercase;display:flex;gap:7px;align-items:center;
+    transition:border-color .15s,background .15s;
+  }
+  .refresh:hover{border-color:var(--ice-dim);background:var(--pelt-2)}
+  .refresh .dot{width:7px;height:7px;border-radius:50%;background:var(--hunt)}
+  .refresh.spin .dot{background:var(--ember);animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.25}}
+
+  /* ---------- nav ---------- */
+  nav.tabs{display:flex;gap:4px;margin:22px 0 20px;flex-wrap:wrap}
+  nav.tabs a{
+    font-family:"Oswald";text-transform:uppercase;letter-spacing:.1em;font-size:13px;
+    color:var(--silver);padding:9px 15px;border-radius:var(--r-sm);border:1px solid transparent;
+    transition:color .15s,border-color .15s,background .15s;
+  }
+  nav.tabs a:hover{color:var(--frost)}
+  nav.tabs a.active{color:var(--moon);background:var(--pelt);border-color:var(--line)}
+
+  /* ---------- panels ---------- */
+  .panel{background:var(--pelt);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+  .panel + .panel{margin-top:var(--gap)}
+  .eyebrow{font-family:"Oswald";text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--silver);margin:0 0 3px}
+  h2.sec{font-family:"Oswald";font-weight:500;text-transform:uppercase;letter-spacing:.05em;font-size:20px;color:var(--moon);margin:0 0 16px}
+
+  /* ---------- hero / progress ---------- */
+  .hero{display:grid;grid-template-columns:1.15fr 1fr;gap:var(--gap)}
+  @media(max-width:760px){.hero{grid-template-columns:1fr}}
+  .goal .big{font-family:"Oswald";font-weight:700;font-size:clamp(44px,8vw,68px);color:var(--moon);line-height:.95;letter-spacing:-.01em}
+  .goal .big .of{color:var(--silver);font-weight:300;font-size:.42em;letter-spacing:.02em}
+  .goal .sub{color:var(--silver);font-size:13.5px;margin-top:4px}
+  .verdict{margin-top:16px;font-size:15px;color:var(--frost)}
+  .verdict b{color:var(--ice);font-weight:600}
+  .verdict.behind b{color:var(--ember)}
+
+  /* signature pace bar */
+  .bar{position:relative;height:16px;border-radius:8px;background:#0d141b;border:1px solid var(--line);overflow:visible;margin-top:18px}
+  .bar .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--ice-dim),var(--ice));transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .bar.good .fill{background:linear-gradient(90deg,#2f6f54,var(--hunt))}
+  .bar .pace{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ember);border-radius:2px}
+  .bar .pace::after{content:"";position:absolute;top:-4px;left:-3px;border:4px solid transparent;border-top-color:var(--ember)}
+  .pace-key{display:flex;gap:16px;margin-top:11px;font-size:11.5px;color:var(--silver);flex-wrap:wrap}
+  .pace-key i{font-style:normal;display:inline-flex;align-items:center;gap:6px}
+  .swatch{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  /* ---------- KPI grid ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--pelt-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
+  .kpi .k{font-family:"JetBrains Mono";font-weight:700;font-size:24px;color:var(--moon);line-height:1}
+  .kpi .l{font-family:"Oswald";text-transform:uppercase;letter-spacing:.12em;font-size:10px;color:var(--silver);margin-top:7px}
+  .kpi.accent .k{color:var(--ember)}
+
+  /* ---------- charts ---------- */
+  .chart{width:100%;height:340px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--silver);font-family:"Oswald";letter-spacing:.08em;text-transform:uppercase;font-size:12px;padding:7px 13px;cursor:pointer}
+  .seg button.on{background:var(--pelt-2);color:var(--moon)}
+
+  /* ---------- tables ---------- */
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  thead th{
+    font-family:"Oswald";text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--silver);
+    text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none;
+  }
+  thead th.l{text-align:left}
+  thead th .ar{color:var(--ice);font-size:9px}
+  tbody td{padding:10px 12px;border-bottom:1px solid #1a232e;text-align:right;font-variant-numeric:tabular-nums}
+  tbody td.l{text-align:left}
+  tbody tr:hover{background:#19222d}
+  td.num,.mono{font-family:"JetBrains Mono"}
+  .rank{color:var(--silver);font-family:"JetBrains Mono"}
+  .pname{color:var(--frost);font-weight:600;cursor:pointer}
+  .pname:hover{color:var(--ice)}
+  tr.clickable{cursor:pointer}
+
+  .badge{display:inline-block;font-family:"Oswald";letter-spacing:.08em;text-transform:uppercase;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid}
+  .b-hunt{color:var(--hunt);border-color:#26483b;background:#11221b}
+  .b-lag{color:var(--lag);border-color:#4a3a1e;background:#221a0d}
+  .b-idle{color:var(--idle);border-color:#4a2626;background:#1f1111}
+
+  /* mini quota bar in rows */
+  .qbar{position:relative;height:8px;width:120px;border-radius:5px;background:#0d141b;border:1px solid var(--line);display:inline-block;vertical-align:middle}
+  .qbar .qf{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--ice)}
+  .qbar.good .qf{background:var(--hunt)}
+  .qbar.zero .qf{background:var(--idle)}
+  .qbar .qp{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ember)}
+
+  .wasted{color:var(--ember)}
+  .dim{color:var(--silver)}
+
+  /* ---------- modal ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(5,8,11,.72);backdrop-filter:blur(3px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto}
+  .scrim.open{display:flex}
+  .modal{width:min(640px,100%);background:var(--pelt);border:1px solid var(--line);border-radius:var(--r);padding:22px;animation:rise .2s ease}
+  @keyframes rise{from{transform:translateY(10px);opacity:0}}
+  .modal .x{float:right;background:transparent;border:1px solid var(--line);color:var(--silver);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:16px}
+  .modal h3{font-family:"Oswald";font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:24px;color:var(--moon);margin:0 0 2px}
+  .modal .mrow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+  .modal .mrow .kpi .k{font-size:20px}
+  .attr{height:280px}
+
+  /* ---------- empty / footer ---------- */
+  .empty{text-align:center;padding:44px 18px;color:var(--silver)}
+  .empty .ico{font-size:30px;opacity:.5;margin-bottom:8px}
+  .empty b{color:var(--frost);font-weight:600}
+  footer{margin-top:28px;color:var(--silver);font-size:12px;line-height:1.7;border-top:1px solid var(--line);padding-top:16px}
+  footer code{font-family:"JetBrains Mono";color:var(--frost);font-size:11px}
+
+  .loading{text-align:center;padding:70px 0;color:var(--silver);font-family:"Oswald";letter-spacing:.16em;text-transform:uppercase;font-size:13px}
+  .err{border-color:#4a2626;background:#1a1111}
+
+  .snapbar{background:#221a0d;border:1px solid #4a3a1e;color:var(--ember);border-radius:var(--r-sm);
+    padding:9px 13px;font-size:12.5px;margin-bottom:14px;font-family:"Hanken Grotesk"}
+  .hidden{display:none !important}
+  :focus-visible{outline:2px solid var(--ice);outline-offset:2px;border-radius:4px}
+  @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute"><symbol id="wolf" viewBox="0 0 64 64">
+  <polygon points="10,8 24,22 32,16 40,22 54,8 52,30 40,48 32,58 24,48 12,30" fill="currentColor"/>
+  <polygon points="20,28 27,26 25,32" fill="var(--ember)"/>
+  <polygon points="44,28 37,26 39,32" fill="var(--ember)"/>
+  <polygon points="32,40 28,45 36,45" fill="#0B0F14"/>
+</symbol></svg>
+
+<header class="top">
+  <div class="top-in">
+    <svg class="sigil" style="color:var(--frost)"><use href="#wolf"/></svg>
+    <div class="brand">
+      <span class="tag">[AWO]</span>
+      <span class="name">Alpha Wolves</span>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="clock">
+      <div class="lbl">Hunt ends in</div>
+      <div class="val" id="countdown">—</div>
+    </div>
+    <button class="refresh" id="refreshBtn" title="Reload from the sheet">
+      <span class="dot"></span><span>Refresh</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="tabs" id="nav">
+    <a href="#overview">Overview</a>
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#chests">Chests</a>
+    <a href="#history">History</a>
+  </nav>
+
+  <div id="snapBanner" class="hidden"></div>
+  <div id="boot" class="loading">Tracking the pack…</div>
+  <div id="app" class="hidden"></div>
+</div>
+
+<div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const SHEET_ID = "15p_q4io0lD6Cffv4kLzNw0YbwqB3P3ZfRdQfAUD5Tvw";
+const TABS = {
+  summary: "[AWO] Alpha Wolves",
+  matrix:  "ChestMatrix",
+  points:  "Points",
+  clanstat:"ClanStat"   // derivable from matrix; not fetched by default
+};
+
+/* When a cycle ends, archive its sheet and PREPEND it here (newest first):
+   { id:"<sheetId>", label:"Jun 24 – Jul 1" }  */
+const ARCHIVE_SHEETS = [];
+
+const FALLBACK_PER_DAY = 4000;     // per-hunter daily quota
+const FALLBACK_GOAL     = 100000;  // clan point goal
+const REFRESH_MS = 10 * 60 * 1000; // 10 min auto-refresh
+
+/* Embedded fallback: lets the in-chat preview render when the sandbox blocks
+   cross-site fetch to Google. Live fetch is always tried first. */
+let USING_SNAPSHOT=false;
+const SNAPSHOT={
+  summaryCsv:`Start,,,2026-06-24 17:00:00
+End,,,2026-07-01 16:59:59
+Updated,,,2026-06-26 03:50:05
+Total Points Per Day,,,,4000
+Total Points,,,,100000`,
+  pointsCsv:`"TURNED ON SOURCE","YES POINTS"
+"Clan wealth","0"
+"Dark Omens event","0"
+"Epic Ancient squad","0"
+"Golden Chest","0"
+"Level 10–14 Vault of the Ancients","0"
+"Level 10 Citadel","1"
+"Level 10 Crypt","0"
+"Level 10 rare Crypt","0"
+"Level 15–19 Vault of the Ancients","0"
+"Level 15 Citadel","1"
+"Level 15 Crypt","0"
+"Level 15 epic Crypt","0"
+"Level 15 rare Crypt","0"
+"Level 20–24 Vault of the Ancients","0"
+"Level 20 Citadel","200"
+"Level 20 Crypt","0"
+"Level 20 epic Crypt","250"
+"Level 20 rare Crypt","100"
+"Level 25–29 Vault of the Ancients","0"
+"Level 25 Citadel","400"
+"Level 25 Crypt","50"
+"Level 25 epic Crypt","500"
+"Level 25 rare Crypt","250"
+"Level 30–34 Vault of the Ancients","0"
+"Level 30 Citadel","650"
+"Level 30 epic Crypt","750"
+"Level 30 rare Crypt","500"
+"Level 35–39 Vault of the Ancients","0"
+"Level 35 epic Crypt","1000"
+"Level 40–44 Vault of the Ancients","0"
+"Level 45 Vault of the Ancients","0"
+"Level 5 Crypt","0"
+"Magic Chest","0"
+"Rise of the Ancients event","0"
+"Silver Chest","0"
+"Spoils of Dread event","0"
+"Summoning Dark Omens","0"
+"Union of Triumph personal reward","0"`,
+  matrixCsv:`Name,Alchemy tournament,Clan wealth,Dark Omens event,Epic Ancient squad,Golden Chest,Level 10 Citadel,Level 10 Crypt,Level 10 rare Crypt,Level 10–14 Vault of the Ancients,Level 15 Citadel,Level 15 Crypt,Level 15 epic Crypt,Level 15 rare Crypt,Level 15–19 Vault of the Ancients,Level 20 Citadel,Level 20 Crypt,Level 20 epic Crypt,Level 20 rare Crypt,Level 20–24 Vault of the Ancients,Level 25 Citadel,Level 25 Crypt,Level 25 epic Crypt,Level 25 rare Crypt,Level 25–29 Vault of the Ancients,Level 30 Citadel,Level 30 rare Crypt,Level 30–34 Vault of the Ancients,Level 35 epic Crypt,Level 35–39 Vault of the Ancients,Level 40–44 Vault of the Ancients,Level 45 Vault of the Ancients,Level 5 Crypt,Magic Chest,Rise of the Ancients event,Sakura of Plenty,Silver Chest,Spoils of Dread event,Summoning Dark Omens,Union of Triumph personal reward
+Dicky Johnson,0,0,4,594,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,31,0,0,2,1,2,10,7,3,1,1,0,15,13,0,0,0,0,6
+Leo,6,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,7,4,1,1,0,0,0,1,0,0,0,0,0,0,5,0,0,0,14,0
+Aurelie,2,0,0,0,0,0,1,0,0,0,7,0,0,0,0,5,3,2,0,0,9,2,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,9,0
+GRUBY,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,9,3,0,1,0,0,0,0,0,0,0,0,0,0,2,0,0,18,0
+esmail,6,0,0,0,0,0,7,3,0,0,1,3,0,0,0,3,2,0,0,0,8,1,0,0,0,0,0,0,0,0,0,1,0,13,1,0,0,8,0
+Kami,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,7,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3
+Legatus Legionis,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,3,0,0,0,1,1,2,0,0,0,0,0,0,0,0,0,3,24,3
+Endisel Ceppoteo,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,3,33,0
+Tiasa,5,0,0,0,0,1,0,1,0,15,0,2,1,0,4,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,17,0
+Zoltan,6,0,0,0,0,0,0,0,0,1,0,0,1,0,1,5,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,8,3
+UnknownSoldier,4,0,0,0,0,0,0,0,0,0,1,0,0,0,0,4,0,4,0,0,3,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,14,0
+TheGospel,0,0,0,0,0,0,0,0,0,1,0,0,0,0,5,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,56,0
+Direwing,6,0,0,0,0,0,5,1,0,0,4,1,2,0,0,2,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,0,3,39,0
+Dali,6,0,0,0,0,0,1,0,0,0,0,1,1,0,0,3,1,0,0,0,4,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,3,5,3
+Kajar,6,0,0,0,0,0,1,0,0,0,0,0,1,0,0,3,0,1,0,0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,2,0,0,16,3
+Enloten,6,0,0,0,0,0,1,0,0,0,5,0,1,0,0,1,1,0,0,0,2,1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,5,0
+PIPINO IL BREVE,6,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,2,0,0,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0
+t3hgone,6,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,2,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0
+Marafir,6,4,0,0,0,0,2,0,0,0,0,0,0,0,0,1,2,0,0,0,3,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,18,0
+Bonertown,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,7,0,1,0,0,0,0,0,0,0,0,0,0,4,1,0,0,4,0
+Baroszero,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0
+BREGA,6,0,0,0,0,0,0,0,0,0,1,0,0,0,0,5,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,13,0
+Bifur,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,3,0,3,0,0,5,0,0,3,0,0,2,0,0,0,0,0,0,0,0,0,0,18,0
+czechu,6,0,0,0,0,0,0,0,0,3,2,0,1,0,1,4,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22,0
+zamalek,6,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,1,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,33,0
+Jigen,5,0,0,0,0,0,0,0,1,0,1,0,0,0,0,3,0,0,0,0,8,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,3,3
+FON,2,0,0,0,0,0,3,0,0,0,7,0,0,2,0,12,1,0,4,0,2,0,0,7,0,0,10,0,0,0,0,0,0,0,0,3,0,13,0
+Veneco,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,29,0
+LightVeteran,0,0,0,0,0,5,1,4,0,1,5,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0
+Saldaing,6,0,0,0,0,0,1,0,0,0,6,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,0,0,44,0
+Gimin,2,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,3,0,3,24,0
+Alupiguss,2,0,0,0,0,0,0,0,0,0,1,0,1,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0
+RecyBS,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0
+Fanvel,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,0,1,0,1,0,0,0,0,0,1,0,0,12,3
+Eyneel,6,11,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,1,0,0,0,0,0,0,0,0,0,0,2,0,3,13,0
+Ildriilas,4,0,0,0,0,1,5,0,0,0,4,0,1,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,3,0,0,16,0
+Dicky Jr,0,0,600,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,6
+JUSTICE,0,0,0,0,0,0,9,0,0,1,3,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0
+Remus,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,4,3
+Marafil,4,0,0,0,0,0,0,0,0,0,2,0,0,0,0,4,0,0,0,0,1,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,3,13,0
+MXInfinity,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,3,12,0
+ledefre13,0,0,2,0,0,0,0,0,0,0,3,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Tanos,6,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,2,0,3,22,0
+Laura,6,0,0,0,0,0,0,2,0,2,7,1,3,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,1,0,3,18,0
+king maryout,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,3,0
+Civitas Kielcensis,0,0,0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0
+Sven BullsEye,6,0,0,0,0,0,0,0,0,0,1,0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,3,4,0
+Lilia,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3
+Kazrasar,1,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Elarod,4,0,3,0,0,0,8,0,0,0,5,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,8,0
+AYLA,6,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16,0
+Polakinho,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Ermete Trismegisto,5,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,32,0
+Varape,6,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,16,0
+BURCAK,0,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,3,52,0
+John Wick I,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,16,0
+السحاب,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6
+Carp3diem,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3
+THOR K290,1,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,13,0,0,3,14,0
+THOR,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,1,0,0,5,0
+BANE,0,0,0,0,0,0,0,0,0,0,0,1,0,2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0
+Thordirne,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Rakkenovo,1,0,0,0,0,0,0,0,0,0,3,1,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Landis,1,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0
+THE JOKER,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,1,0,0,12,0
+PEDJA VI,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0
+Cinos,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0
+Fatih Sultan Mehmet,2,0,0,0,0,0,0,0,0,0,2,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,17,0
+El Cid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,3
+Adolbine,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,30,0
+Whitebreaker,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0
+Viking,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0
+DJ SB,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,6
+Mightshaper,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3
+Tashicage,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0
+Darduing,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,13,1,0,0,9,0
+Gaginn,0,0,0,0,0,0,1,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,20,0
+ابوعلي سمير,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Tygranara,3,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0
+Lily,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,18,0
+Lorlot,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,0
+Elfanor,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,0
+Oden,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,13,0,0,0,0,0`
+};
+function renderBanner(){
+  const b=document.getElementById("snapBanner"); if(!b) return;
+  if(USING_SNAPSHOT){ b.className="snapbar";
+    b.innerHTML='Showing a saved snapshot — the live sheet can\'t be reached from this preview sandbox. The deployed site pulls live data.'; }
+  else{ b.className="hidden"; b.innerHTML=""; }
+}
+
+/* ============================================================
+   FETCH + PARSE
+   ============================================================ */
+function gvizUrl(sheetName){
+  return "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
+         "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(sheetName) +
+         "&_=" + Date.now();
+}
+async function fetchCsv(sheetName){
+  const r = await fetch(gvizUrl(sheetName));
+  if(!r.ok) throw new Error(sheetName + " → " + r.status);
+  return parseCsv(await r.text());
+}
+/* RFC-4180-ish parser: handles quoted fields, commas, embedded quotes, CRLF */
+function parseCsv(text){
+  const rows=[]; let row=[], cell="", q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; }
+      else cell+=c;
+    }else{
+      if(c==='"') q=true;
+      else if(c===','){ row.push(cell); cell=""; }
+      else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else if(c==='\r'){ /* skip */ }
+      else cell+=c;
+    }
+  }
+  if(cell.length||row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+function num(v){
+  if(v==null) return 0;
+  const n=parseFloat(String(v).replace(/[\s\u00a0,]/g,""));
+  return isNaN(n)?0:n;
+}
+function lastNonEmpty(row){
+  for(let i=row.length-1;i>=0;i--){ const v=(row[i]||"").trim(); if(v!=="") return v; }
+  return "";
+}
+/* tolerant date parse for "2026-06-24 17:00:00" */
+function parseDate(s){
+  if(!s) return null;
+  const m=String(s).trim().match(/(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+  if(!m) return null;
+  return new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
+}
+
+/* summary tab: scan by row label, value = last non-empty cell (column-drift proof) */
+function parseSummary(rows){
+  const find = lbl => {
+    const r=rows.find(r=>(r[0]||"").trim().toLowerCase()===lbl.toLowerCase());
+    return r?lastNonEmpty(r):"";
+  };
+  return {
+    start:   parseDate(find("Start")),
+    end:     parseDate(find("End")),
+    updated: parseDate(find("Updated")),
+    perDay:  num(find("Total Points Per Day")) || FALLBACK_PER_DAY,
+    goal:    num(find("Total Points"))         || FALLBACK_GOAL
+  };
+}
+
+/* ChestMatrix → sources[] + players[] (named columns only; padding dropped) */
+function parseMatrix(rows){
+  if(!rows.length) return {sources:[],players:[]};
+  const header=rows[0];
+  const cols=[]; // {idx, name}
+  for(let i=1;i<header.length;i++){
+    const name=(header[i]||"").trim();
+    if(name) cols.push({idx:i,name});
+  }
+  const players=[];
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const name=(row[0]||"").trim();
+    if(!name) continue;
+    const counts={}; let total=0;
+    for(const c of cols){ const v=num(row[c.idx]); counts[c.name]=v; total+=v; }
+    players.push({name,counts,total});
+  }
+  return {sources:cols.map(c=>c.name),players};
+}
+
+/* Points → Map(source → weight) */
+function parsePoints(rows){
+  const m=new Map();
+  for(const row of rows){
+    const name=(row[0]||"").trim();
+    if(!name||name.toUpperCase()==="TURNED ON SOURCE") continue;
+    m.set(name,num(row[1]));
+  }
+  return m;
+}
+
+/* ============================================================
+   COMPUTE
+   ============================================================ */
+const DAY=86400000;
+let STATE=null;
+
+function compute(summary,matrix,points){
+  // live data → real clock; frozen snapshot → its own "updated" time, so pace/projection stay consistent
+  const now=(USING_SNAPSHOT && summary.updated)?summary.updated:new Date();
+  const total = summary.start&&summary.end ? Math.max((summary.end-summary.start)/DAY,1) : 7;
+  const elapsed = summary.start
+    ? Math.min(Math.max((now-summary.start)/DAY,0.01), total)
+    : 1;
+  const daysLeft = Math.max(total-elapsed,0);
+
+  const players=matrix.players.map(p=>{
+    let value=0, wastedOpens=0;
+    const bySource=[];
+    for(const src of matrix.sources){
+      const cnt=p.counts[src]||0; if(!cnt) continue;
+      const w=points.get(src)||0;
+      const pts=cnt*w;
+      if(pts>0) bySource.push({src,cnt,w,pts}); else wastedOpens+=cnt;
+      value+=pts;
+    }
+    bySource.sort((a,b)=>b.pts-a.pts);
+    const pace = value/elapsed;
+    let status="idle";
+    if(value>0) status = pace>=summary.perDay ? "hunt" : "lag";
+    return {
+      name:p.name, value, count:p.total,
+      eff: p.total? value/p.total : 0,
+      pace, status, bySource, wastedOpens
+    };
+  }).sort((a,b)=>b.value-a.value || b.count-a.count);
+  players.forEach((p,i)=>p.rank=i+1);
+
+  // clan distribution by source (counts + points)
+  const dist={};
+  for(const src of matrix.sources) dist[src]={src,opens:0,w:points.get(src)||0,pts:0};
+  for(const p of matrix.players)
+    for(const src of matrix.sources){
+      const c=p.counts[src]||0; dist[src].opens+=c; dist[src].pts+=c*(points.get(src)||0);
+    }
+  const sources=Object.values(dist).filter(d=>d.opens>0);
+
+  const clanValue=players.reduce((s,p)=>s+p.value,0);
+  const clanChests=players.reduce((s,p)=>s+p.count,0);
+  const active=players.filter(p=>p.value>0).length;
+  const onQuota=players.filter(p=>p.status==="hunt").length;
+  const idle=players.filter(p=>p.value===0).length;
+  const clanPts=sources.reduce((s,d)=>s+d.pts,0)||1;
+
+  return {
+    summary, now, total, elapsed, daysLeft,
+    players, sources,
+    clanValue, clanChests, active, onQuota, idle, clanPts,
+    goalPct: Math.min(clanValue/summary.goal*100,100),
+    goalPacePct: Math.min(elapsed/total*100,100),
+    projected: clanValue/elapsed*total
+  };
+}
+
+/* ============================================================
+   RENDER HELPERS
+   ============================================================ */
+const $=s=>document.querySelector(s);
+const fmt=n=>Math.round(n).toLocaleString("en-US");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const badge=st=>({hunt:'<span class="badge b-hunt">On pace</span>',
+                  lag:'<span class="badge b-lag">Behind</span>',
+                  idle:'<span class="badge b-idle">Idle</span>'}[st]);
+
+/* mini quota bar: fill = pace/quota, pace notch always at 100% (the quota line) */
+function qbar(p,perDay){
+  const pct=Math.min(p.pace/perDay*100,100);
+  const cls=p.value===0?"zero":(p.status==="hunt"?"good":"");
+  return '<span class="qbar '+cls+'"><span class="qf" style="width:'+pct+'%"></span>'
+        +'<span class="qp" style="left:100%"></span></span>';
+}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+function viewOverview(s){
+  const ahead = s.clanValue >= s.summary.goal*(s.elapsed/s.total);
+  const verdict = ahead
+    ? 'Pack is <b>ahead of pace</b> — projected to finish near <b>'+fmt(s.projected)+'</b> ('+Math.round(s.projected/s.summary.goal*100)+'% of goal).'
+    : 'Pack is <b>behind pace</b> — projected <b>'+fmt(s.projected)+'</b> of '+fmt(s.summary.goal)+' at the current rate.';
+
+  return ''
+  +'<div class="panel"><div class="hero">'
+    +'<div class="goal">'
+      +'<p class="eyebrow">March to the goal</p>'
+      +'<div class="big" id="goalNum">0<span class="of"> / '+fmt(s.summary.goal)+'</span></div>'
+      +'<div class="sub">'+Math.round(s.goalPct)+'% complete · day '+Math.ceil(s.elapsed)+' of '+Math.round(s.total)+' · '+s.daysLeft.toFixed(1)+' days left</div>'
+      +'<div class="bar '+(ahead?'good':'')+'"><div class="fill" id="goalFill" style="width:0%"></div>'
+        +'<div class="pace" style="left:'+s.goalPacePct+'%"></div></div>'
+      +'<div class="pace-key">'
+        +'<i><span class="swatch" style="background:var(--ice)"></span>Points banked</i>'
+        +'<i><span class="swatch" style="background:var(--ember)"></span>Where pace says we should be</i>'
+      +'</div>'
+      +'<p class="verdict '+(ahead?'':'behind')+'">'+verdict+'</p>'
+    +'</div>'
+    +'<div class="kpis" style="grid-template-columns:repeat(2,1fr);align-content:start">'
+      +kpi(fmt(s.active),"Hunters scoring")
+      +kpi(fmt(s.onQuota),"Meeting 4k/day",true)
+      +kpi(fmt(s.clanChests),"Chests opened")
+      +kpi(fmt(s.idle),"Idle in the pack")
+    +'</div>'
+  +'</div></div>'
+
+  +'<div class="panel">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">'
+      +'<div><p class="eyebrow">Source breakdown</p><h2 class="sec" style="margin:0">Where it comes from</h2></div>'
+      +'<div class="seg" id="distSeg"><button class="on" data-m="pts">By points</button><button data-m="opens">By opens</button></div>'
+    +'</div>'
+    +'<div id="distChart" class="chart"></div>'
+    +'<p class="dim" style="font-size:12.5px;margin:4px 2px 0">Opens and points tell different stories — the most-opened chests often score nothing, while a handful of high-level crypts carry the score.</p>'
+  +'</div>'
+
+  +'<div class="panel"><p class="eyebrow">Front of the pack</p><h2 class="sec">Top hunters</h2>'
+    +topList(s)+'</div>';
+}
+function kpi(v,l,accent){return '<div class="kpi'+(accent?' accent':'')+'"><div class="k">'+v+'</div><div class="l">'+l+'</div></div>';}
+function topList(s){
+  const top=s.players.slice(0,5);
+  let h='<div class="tbl-wrap"><table><tbody>';
+  for(const p of top){
+    h+='<tr class="clickable" data-p="'+esc(p.name)+'">'
+      +'<td class="l rank" style="width:34px">#'+p.rank+'</td>'
+      +'<td class="l"><span class="pname">'+esc(p.name)+'</span></td>'
+      +'<td class="num" style="color:var(--moon);font-weight:700">'+fmt(p.value)+'</td>'
+      +'<td class="l" style="width:140px">'+qbar(p,s.summary.perDay)+'</td>'
+      +'<td>'+badge(p.status)+'</td></tr>';
+  }
+  return h+'</tbody></table></div>';
+}
+
+let SORT={key:"value",dir:-1};
+function viewLeaderboard(s){
+  const cols=[
+    {k:"rank",t:"#",l:true},{k:"name",t:"Hunter",l:true},
+    {k:"value",t:"Points"},{k:"count",t:"Chests"},{k:"eff",t:"Pts / chest"},
+    {k:"pace",t:"Pace / day"},{k:"quota",t:"Vs 4k quota",l:true},{k:"status",t:"Status",l:true}
+  ];
+  const arr=[...s.players].sort((a,b)=>{
+    let x=a[SORT.key],y=b[SORT.key];
+    if(SORT.key==="status"){const o={hunt:3,lag:2,idle:1};x=o[a.status];y=o[b.status];}
+    if(SORT.key==="name")return SORT.dir*String(a.name).localeCompare(b.name);
+    return SORT.dir*((x||0)-(y||0));
+  });
+  let h='<div class="panel"><p class="eyebrow">'+s.players.length+' hunters · '+s.onQuota+' on pace · '+s.idle+' idle</p>'
+    +'<h2 class="sec">Leaderboard</h2><div class="tbl-wrap"><table><thead><tr>';
+  for(const c of cols){
+    const ar = SORT.key===c.k ? '<span class="ar">'+(SORT.dir<0?'▼':'▲')+'</span>' : '';
+    h+='<th class="'+(c.l?'l':'')+'" data-k="'+c.k+'">'+c.t+' '+ar+'</th>';
+  }
+  h+='</tr></thead><tbody>';
+  for(const p of arr){
+    h+='<tr class="clickable" data-p="'+esc(p.name)+'">'
+      +'<td class="l rank">'+p.rank+'</td>'
+      +'<td class="l" dir="auto"><span class="pname">'+esc(p.name)+'</span></td>'
+      +'<td class="num" style="color:var(--moon);font-weight:600">'+fmt(p.value)+'</td>'
+      +'<td class="num">'+fmt(p.count)+'</td>'
+      +'<td class="num dim">'+(p.eff?p.eff.toFixed(1):'—')+'</td>'
+      +'<td class="num">'+fmt(p.pace)+'</td>'
+      +'<td class="l">'+qbar(p,s.summary.perDay)+'</td>'
+      +'<td class="l">'+badge(p.status)+'</td></tr>';
+  }
+  return h+'</tbody></table></div>'
+    +'<p class="dim" style="font-size:12.5px;margin-top:12px">Pace = points ÷ days elapsed. The amber line marks the 4,000-pts/day quota; bars that reach it are on track.</p></div>';
+}
+
+let CHSORT={key:"pts",dir:-1};
+function viewChests(s){
+  const arr=[...s.sources].sort((a,b)=>CHSORT.dir*((a[CHSORT.key]||0)-(b[CHSORT.key]||0)));
+  const cols=[{k:"src",t:"Source",l:true},{k:"opens",t:"Opens"},{k:"w",t:"Pts each"},{k:"pts",t:"Total points"},{k:"share",t:"% of score"}];
+  let h='<div class="panel"><p class="eyebrow">'+s.sources.length+' active sources</p><h2 class="sec">What actually scores</h2>'
+    +'<div class="tbl-wrap"><table><thead><tr>';
+  for(const c of cols){
+    const ar=CHSORT.key===c.k?'<span class="ar">'+(CHSORT.dir<0?'▼':'▲')+'</span>':'';
+    h+='<th class="'+(c.l?'l':'')+'" data-ck="'+c.k+'">'+c.t+' '+ar+'</th>';
+  }
+  h+='</tr></thead><tbody>';
+  for(const d of arr){
+    const share=d.pts/s.clanPts*100;
+    const dead=d.w===0;
+    h+='<tr>'
+      +'<td class="l" '+(dead?'style="color:var(--ember)"':'')+'>'+esc(d.src)+(dead?' <span class="dim" style="font-size:11px">· no points</span>':'')+'</td>'
+      +'<td class="num">'+fmt(d.opens)+'</td>'
+      +'<td class="num dim">'+(d.w?fmt(d.w):'0')+'</td>'
+      +'<td class="num" style="color:'+(dead?'var(--silver)':'var(--moon)')+';font-weight:600">'+fmt(d.pts)+'</td>'
+      +'<td class="num">'+(share>=0.05?share.toFixed(1)+'%':'—')+'</td></tr>';
+  }
+  const wasted=s.sources.filter(d=>d.w===0).reduce((x,d)=>x+d.opens,0);
+  return h+'</tbody></table></div>'
+    +'<p class="dim" style="font-size:12.5px;margin-top:12px"><span class="wasted">'+fmt(wasted)+' chests</span> were opened on sources worth zero points this event — effort that didn\'t move the score.</p></div>';
+}
+
+function viewHistory(s){
+  if(!ARCHIVE_SHEETS.length){
+    return '<div class="panel"><div class="empty">'
+      +'<div class="ico"><svg width="40" height="40" style="color:var(--line)"><use href="#wolf"/></svg></div>'
+      +'<p><b>No past hunts archived yet.</b></p>'
+      +'<p style="max-width:440px;margin:6px auto 0">When this event closes, copy the sheet, then add it to the '
+      +'<code style="font-family:JetBrains Mono;color:var(--ice)">ARCHIVE_SHEETS</code> list at the top of the script '
+      +'(newest first). Cycle-over-cycle comparison turns on automatically once there\'s history to compare.</p>'
+      +'</div></div>';
+  }
+  // Scaffold: archives present → selector + compare table would render here.
+  return '<div class="panel"><p class="eyebrow">'+ARCHIVE_SHEETS.length+' past hunts</p>'
+    +'<h2 class="sec">Cycle history</h2><p class="dim">Archived cycles detected — comparison view ready to wire up.</p></div>';
+}
+
+/* ============================================================
+   CHARTS
+   ============================================================ */
+let distChart=null, distMode="pts";
+function renderDist(s){
+  const el=$("#distChart"); if(!el) return;
+  distChart && distChart.dispose();
+  distChart=echarts.init(el,null,{renderer:"canvas"});
+  const key=distMode==="pts"?"pts":"opens";
+  const data=[...s.sources].filter(d=>d[key]>0).sort((a,b)=>b[key]-a[key]).slice(0,12).reverse();
+  distChart.setOption({
+    grid:{left:8,right:24,top:10,bottom:10,containLabel:true},
+    tooltip:{trigger:"axis",backgroundColor:"#161D26",borderColor:"#2A3542",
+      textStyle:{color:"#C9D6E3",fontFamily:"Hanken Grotesk"},
+      formatter:p=>{const d=p[0];return d.name+"<br/><b style='color:#E8EEF4'>"+fmt(d.value)+"</b> "+(distMode==="pts"?"points":"opens");}},
+    xAxis:{type:"value",axisLabel:{color:"#7E8C9E",fontFamily:"JetBrains Mono",fontSize:10},
+      splitLine:{lineStyle:{color:"#1a232e"}}},
+    yAxis:{type:"category",data:data.map(d=>d.src),
+      axisLabel:{color:"#C9D6E3",fontFamily:"Hanken Grotesk",fontSize:11,width:160,overflow:"truncate"},
+      axisLine:{lineStyle:{color:"#2A3542"}},axisTick:{show:false}},
+    series:[{type:"bar",data:data.map(d=>d[key]),barWidth:"62%",
+      itemStyle:{borderRadius:[0,4,4,0],
+        color:distMode==="pts"
+          ?{type:"linear",x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:"#33617d"},{offset:1,color:"#5FA8D3"}]}
+          :{type:"linear",x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:"#5a4a2a"},{offset:1,color:"#E8A33D"}]}}}]
+  });
+}
+
+let attrChart=null;
+function renderAttr(p){
+  const el=$("#attrChart"); if(!el) return;
+  attrChart && attrChart.dispose();
+  attrChart=echarts.init(el,null,{renderer:"canvas"});
+  const data=p.bySource.slice(0,8).reverse();
+  if(!data.length){ el.innerHTML='<div class="empty" style="padding:60px 0">No points scored yet.</div>'; return; }
+  attrChart.setOption({
+    grid:{left:8,right:48,top:10,bottom:10,containLabel:true},
+    tooltip:{trigger:"axis",backgroundColor:"#161D26",borderColor:"#2A3542",
+      textStyle:{color:"#C9D6E3"},
+      formatter:t=>{const d=t[0],src=data[d.dataIndex];return src.src+"<br/><b style='color:#E8EEF4'>"+fmt(src.pts)+"</b> pts · "+src.cnt+" × "+fmt(src.w);}},
+    xAxis:{type:"value",axisLabel:{color:"#7E8C9E",fontFamily:"JetBrains Mono",fontSize:10},splitLine:{lineStyle:{color:"#1a232e"}}},
+    yAxis:{type:"category",data:data.map(d=>d.src),
+      axisLabel:{color:"#C9D6E3",fontSize:11,width:150,overflow:"truncate"},
+      axisLine:{lineStyle:{color:"#2A3542"}},axisTick:{show:false}},
+    series:[{type:"bar",data:data.map(d=>d.pts),barWidth:"60%",
+      label:{show:true,position:"right",color:"#7E8C9E",fontFamily:"JetBrains Mono",fontSize:10,formatter:t=>fmt(t.value)},
+      itemStyle:{borderRadius:[0,4,4,0],color:{type:"linear",x:0,y:0,x2:1,y2:0,colorStops:[{offset:0,color:"#33617d"},{offset:1,color:"#5FA8D3"}]}}}]
+  });
+}
+
+/* ============================================================
+   PLAYER MODAL
+   ============================================================ */
+function openPlayer(name){
+  const s=STATE, p=s.players.find(x=>x.name===name); if(!p) return;
+  const scored=p.bySource.reduce((x,d)=>x+d.pts,0)||1;
+  const need=s.summary.perDay; const pacePct=Math.min(p.pace/need*100,100);
+  let attr=p.bySource.slice(0,6).map(d=>
+    '<tr><td class="l">'+esc(d.src)+'</td><td class="num dim">'+d.cnt+' × '+fmt(d.w)+'</td>'
+    +'<td class="num" style="color:var(--moon)">'+fmt(d.pts)+'</td>'
+    +'<td class="num dim">'+Math.round(d.pts/scored*100)+'%</td></tr>').join("");
+
+  $("#modal").innerHTML=
+    '<button class="x" id="mx">×</button>'
+    +'<p class="eyebrow">Rank #'+p.rank+' · '+badge(p.status)+'</p>'
+    +'<h3 dir="auto">'+esc(p.name)+'</h3>'
+    +'<div class="mrow">'
+      +kpi(fmt(p.value),"Points")+kpi(fmt(p.count),"Chests")
+      +kpi(p.eff?p.eff.toFixed(1):'—',"Pts / chest")+kpi(fmt(p.pace),"Pace / day")
+    +'</div>'
+    +'<div class="bar '+(p.status==="hunt"?'good':'')+'" style="margin-top:4px">'
+      +'<div class="fill" style="width:'+pacePct+'%"></div><div class="pace" style="left:100%"></div></div>'
+    +'<p class="dim" style="font-size:12px;margin:8px 2px 0">Bar = today\'s pace vs the 4,000/day quota (amber line).</p>'
+    +(p.bySource.length?'<p class="eyebrow" style="margin-top:20px">Points attribution</p><div id="attrChart" class="attr"></div>'
+      +'<div class="tbl-wrap"><table><tbody>'+attr+'</tbody></table></div>':'')
+    +(p.wastedOpens?'<p class="dim" style="margin-top:14px;font-size:13px"><span class="wasted">'+fmt(p.wastedOpens)+' chests</span> opened on zero-point sources.</p>':'');
+
+  $("#scrim").classList.add("open");
+  $("#mx").onclick=closePlayer;
+  if(p.bySource.length) setTimeout(()=>renderAttr(p),30);
+}
+function closePlayer(){ $("#scrim").classList.remove("open"); attrChart&&attrChart.dispose(); attrChart=null; }
+$("#scrim").addEventListener("click",e=>{ if(e.target.id==="scrim") closePlayer(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closePlayer(); });
+
+/* ============================================================
+   ROUTER
+   ============================================================ */
+const ROUTES={overview:viewOverview,leaderboard:viewLeaderboard,chests:viewChests,history:viewHistory};
+function route(){
+  if(!STATE) return;
+  const hash=(location.hash.replace("#","")||"overview");
+  const view=ROUTES[hash]||viewOverview;
+  $("#app").innerHTML=view(STATE);
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+hash));
+  wire(hash);
+  if(hash==="overview"){ animateGoal(STATE); setTimeout(()=>renderDist(STATE),30); }
+}
+function wire(hash){
+  // player click
+  document.querySelectorAll("[data-p]").forEach(el=>el.addEventListener("click",()=>openPlayer(el.getAttribute("data-p"))));
+  if(hash==="leaderboard")
+    document.querySelectorAll("th[data-k]").forEach(th=>th.addEventListener("click",()=>{
+      const k=th.getAttribute("data-k");
+      SORT = SORT.key===k ? {key:k,dir:-SORT.dir} : {key:k,dir:(k==="name"?1:-1)};
+      route();
+    }));
+  if(hash==="chests")
+    document.querySelectorAll("th[data-ck]").forEach(th=>th.addEventListener("click",()=>{
+      const k=th.getAttribute("data-ck");
+      CHSORT = CHSORT.key===k ? {key:k,dir:-CHSORT.dir} : {key:k,dir:(k==="src"?1:-1)};
+      route();
+    }));
+  if(hash==="overview")
+    document.querySelectorAll("#distSeg button").forEach(b=>b.addEventListener("click",()=>{
+      distMode=b.getAttribute("data-m");
+      document.querySelectorAll("#distSeg button").forEach(x=>x.classList.toggle("on",x===b));
+      renderDist(STATE);
+    }));
+}
+function animateGoal(s){
+  const numEl=$("#goalNum"), fill=$("#goalFill"); if(!numEl) return;
+  const target=s.clanValue, dur=900, t0=performance.now();
+  const goalLabel=' <span class="of"> / '+fmt(s.summary.goal)+'</span>';
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches){
+    numEl.innerHTML=fmt(target)+goalLabel; fill.style.width=s.goalPct+"%"; return;
+  }
+  requestAnimationFrame(function step(t){
+    const k=Math.min((t-t0)/dur,1), e=1-Math.pow(1-k,3);
+    numEl.innerHTML=fmt(target*e)+goalLabel;
+    if(k<1) requestAnimationFrame(step); else numEl.innerHTML=fmt(target)+goalLabel;
+  });
+  fill.style.width=s.goalPct+"%";
+}
+window.addEventListener("hashchange",route);
+window.addEventListener("resize",()=>{ distChart&&distChart.resize(); attrChart&&attrChart.resize(); });
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+function tickClock(){
+  const el=$("#countdown"); if(!el||!STATE||!STATE.summary.end) return;
+  let d=STATE.summary.end-new Date();
+  if(d<=0){ el.textContent="ENDED"; return; }
+  const days=Math.floor(d/DAY); d-=days*DAY;
+  const h=Math.floor(d/3.6e6); d-=h*3.6e6;
+  const m=Math.floor(d/6e4);
+  el.textContent=(days?days+"d ":"")+String(h).padStart(2,"0")+"h "+String(m).padStart(2,"0")+"m";
+}
+setInterval(tickClock,1000);
+
+/* ============================================================
+   LOAD
+   ============================================================ */
+async function load(){
+  const btn=$("#refreshBtn"); btn&&btn.classList.add("spin");
+  try{
+    let sum,mat,pts;
+    try{
+      [mat,pts]=await Promise.all([fetchCsv(TABS.matrix),fetchCsv(TABS.points)]);
+      sum=await fetchCsv(TABS.summary).catch(()=>parseCsv(SNAPSHOT.summaryCsv));
+      USING_SNAPSHOT=false;
+    }catch(netErr){
+      mat=parseCsv(SNAPSHOT.matrixCsv);
+      pts=parseCsv(SNAPSHOT.pointsCsv);
+      sum=parseCsv(SNAPSHOT.summaryCsv);
+      USING_SNAPSHOT=true;
+    }
+    STATE=compute(parseSummary(sum),parseMatrix(mat),parsePoints(pts));
+    $("#boot").classList.add("hidden");
+    $("#app").classList.remove("hidden");
+    renderBanner();
+    route(); tickClock();
+  }catch(err){
+    $("#boot").classList.remove("hidden"); $("#boot").classList.add("err");
+    $("#boot").innerHTML='<div class="panel err" style="text-align:left">'
+      +'<h2 class="sec" style="color:var(--idle)">Couldn\'t load the data</h2>'
+      +'<p class="dim">'+esc(err.message)+'</p></div>';
+  }finally{ btn&&btn.classList.remove("spin"); }
+}
+$("#refreshBtn").addEventListener("click",load);
+setInterval(load,REFRESH_MS);
+
+/* footer (static) */
+(function(){
+  const f=document.createElement("footer"); f.className="wrap";
+  f.style.cssText="max-width:1180px;margin:28px auto 0;padding:16px 18px 0";
+  f.innerHTML='Live from <code>[AWO] Alpha Wolves</code> via Google Sheets · points recomputed from '
+    +'<code>ChestMatrix × Points</code>, independent of the summary tab · auto-refreshes every 10 min.';
+  document.querySelector(".wrap").appendChild(f);
+})();
+
+load();
+</script>
+</body>
+</html>
