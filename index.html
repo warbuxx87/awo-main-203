@@ -425,18 +425,39 @@ function parseDate(s){
   return new Date(+m[1],+m[2]-1,+m[3],+(m[4]||0),+(m[5]||0),+(m[6]||0));
 }
 
-/* summary tab: scan by row label, value = last non-empty cell (column-drift proof) */
+/* summary tab: gviz DROPS the row labels (Start/End/Updated/…) — they show in the
+   spreadsheet web view but not in the CSV, so the cells arrive positionally with an
+   empty column A. Anchor on content, not labels:
+   the datetime-with-time cells are Start, End, Updated (Updated is last); the first
+   two positive numbers after Updated are the per-day quota and the point goal. */
 function parseSummary(rows){
-  const find = lbl => {
-    const r=rows.find(r=>(r[0]||"").trim().toLowerCase()===lbl.toLowerCase());
-    return r?lastNonEmpty(r):"";
-  };
+  // bound the block at the leaderboard header so player rows can't leak in
+  let stop=rows.length;
+  for(let i=0;i<rows.length;i++){
+    if(rows[i].some(c=>(c||"").trim().toUpperCase()==="PLAYER")){ stop=i; break; }
+  }
+  const reStamp=/\d{4}-\d{1,2}-\d{1,2}[ T]\d{1,2}:\d{2}/;   // date WITH a time (skips date-only "Today")
+  const stamps=[];
+  for(let r=0;r<stop;r++){
+    for(const c of rows[r]){
+      if(c && reStamp.test(String(c).trim())){ stamps.push({r,v:String(c).trim()}); break; }
+    }
+  }
+  // use the LAST three stamps so an added "Today (with time)" row can't shift them
+  const at=i=>stamps.length+i>=0?stamps[stamps.length+i]:null;
+  const start=at(-3), end=at(-2), updated=at(-1);
+  const afterRow=updated?updated.r:-1;
+  const nums=[];
+  for(let r=afterRow+1;r<stop;r++){
+    const n=num(lastNonEmpty(rows[r]));
+    if(n>0) nums.push(n);
+  }
   return {
-    start:   parseDate(find("Start")),
-    end:     parseDate(find("End")),
-    updated: parseDate(find("Updated")),
-    perDay:  num(find("Total Points Per Day")) || FALLBACK_PER_DAY,
-    goal:    num(find("Total Points"))         || FALLBACK_GOAL
+    start:   start?parseDate(start.v):null,
+    end:     end?parseDate(end.v):null,
+    updated: updated?parseDate(updated.v):null,
+    perDay:  nums[0] || FALLBACK_PER_DAY,
+    goal:    nums[1] || FALLBACK_GOAL
   };
 }
 
