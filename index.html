@@ -174,6 +174,12 @@
   .hidden{display:none !important}
   :focus-visible{outline:2px solid var(--ice);outline-offset:2px;border-radius:4px}
   @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+  .filter-row{display:flex;align-items:center;gap:14px;margin:0 0 16px;flex-wrap:wrap}
+  #lbSearch{flex:0 1 260px;background:#0c0805;border:1px solid var(--line);color:var(--frost);
+    font-family:"EB Garamond",serif;font-size:15px;padding:9px 13px;border-radius:var(--r-sm)}
+  #lbSearch::placeholder{color:var(--silver)}
+  #lbSearch:focus{outline:none;border-color:var(--ice);box-shadow:0 0 0 2px rgba(202,136,60,.2)}
+  .filter-hint{font-family:"Cinzel",serif;letter-spacing:.12em;text-transform:uppercase;font-size:10px;color:var(--silver)}
 </style>
 </head>
 <body>
@@ -573,6 +579,22 @@ function qbar(p,perDay){
   return '<span class="qbar '+cls+'"><span class="qf" style="width:'+pct+'%"></span>'
         +'<span class="qp" style="left:100%"></span></span>';
 }
+function applyLBFilter(){
+  const inp=document.getElementById("lbSearch"); if(!inp) return;
+  LBQ=inp.value;
+  const q=inp.value.trim().toLowerCase();
+  const rows=document.querySelectorAll("#lbBody tr");
+  let shown=0;
+  rows.forEach(tr=>{
+    const name=(tr.getAttribute("data-p")||"").toLowerCase();
+    const hit=!q||name.includes(q);
+    tr.style.display=hit?"":"none";
+    if(hit) shown++;
+  });
+  const nm=document.getElementById("lbNoMatch"); if(nm) nm.style.display=shown?"none":"";
+  const hint=document.getElementById("lbHint");
+  if(hint) hint.textContent=q?(shown+" of "+rows.length+" shown"):"Tap a hunter for their points breakdown";
+}
 
 /* ============================================================
    VIEWS
@@ -633,6 +655,7 @@ function topList(s){
 }
 
 let SORT={key:"value",dir:-1};
+let LBQ="";
 function viewLeaderboard(s){
   const cols=[
     {k:"rank",t:"#",l:true},{k:"name",t:"Hunter",l:true},
@@ -646,12 +669,17 @@ function viewLeaderboard(s){
     return SORT.dir*((x||0)-(y||0));
   });
   let h='<div class="panel"><p class="eyebrow">'+s.players.length+' hunters · '+s.onQuota+' on pace · '+s.idle+' idle</p>'
-    +'<h2 class="sec">Leaderboard</h2><div class="tbl-wrap"><table><thead><tr>';
+    +'<h2 class="sec">Leaderboard</h2>'
+    +'<div class="filter-row">'
+      +'<input id="lbSearch" type="text" placeholder="Search hunter…" value="'+esc(LBQ)+'" autocomplete="off" spellcheck="false" />'
+      +'<span class="filter-hint" id="lbHint"></span>'
+    +'</div>'
+    +'<div class="tbl-wrap"><table><thead><tr>';
   for(const c of cols){
     const ar = SORT.key===c.k ? '<span class="ar">'+(SORT.dir<0?'▼':'▲')+'</span>' : '';
     h+='<th class="'+(c.l?'l':'')+'" data-k="'+c.k+'">'+c.t+' '+ar+'</th>';
   }
-  h+='</tr></thead><tbody>';
+  h+='</tr></thead><tbody id="lbBody">';
   for(const p of arr){
     h+='<tr class="clickable" data-p="'+esc(p.name)+'">'
       +'<td class="l rank">'+p.rank+'</td>'
@@ -664,6 +692,7 @@ function viewLeaderboard(s){
       +'<td class="l">'+badge(p.status)+'</td></tr>';
   }
   return h+'</tbody></table></div>'
+    +'<div id="lbNoMatch" class="empty" style="display:none">No hunter by that name.</div>'
     +'<p class="dim" style="font-size:12.5px;margin-top:12px">Pace = points ÷ days elapsed. The amber line marks the 4,000-pts/day quota; bars that reach it are on track.</p></div>';
 }
 
@@ -809,12 +838,15 @@ function route(){
 function wire(hash){
   // player click
   document.querySelectorAll("[data-p]").forEach(el=>el.addEventListener("click",()=>openPlayer(el.getAttribute("data-p"))));
-  if(hash==="leaderboard")
+  if(hash==="leaderboard"){
     document.querySelectorAll("th[data-k]").forEach(th=>th.addEventListener("click",()=>{
       const k=th.getAttribute("data-k");
       SORT = SORT.key===k ? {key:k,dir:-SORT.dir} : {key:k,dir:(k==="name"?1:-1)};
       route();
     }));
+    const lb=document.getElementById("lbSearch");
+    if(lb){ lb.addEventListener("input",applyLBFilter); applyLBFilter(); }
+  }
   if(hash==="chests")
     document.querySelectorAll("th[data-ck]").forEach(th=>th.addEventListener("click",()=>{
       const k=th.getAttribute("data-ck");
