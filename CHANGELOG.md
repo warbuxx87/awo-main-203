@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.1.1] - 2026-06-26
 
 ### Fixed
-- **"Hunt ends in" countdown and goal projection never worked on the live site.** gviz returns the summary tab's date rows *without* their labels — "Start / End / Updated" appear in the spreadsheet's web view but not in the CSV export, so the label-based date parser matched nothing and silently fell back to "1 day elapsed." That left the countdown blank and inflated the projection (clan value × 7). The parser now anchors on the datetime cell *content* (the three timestamps, in order) and reads the per-day quota and point goal as the numbers following Updated — independent of labels and column position.
+- **"Hunt ends in" countdown and goal projection never worked on the live site.** gviz returns the summary tab's date rows *without* their labels — "Start / End / Updated" appear in the spreadsheet's web view but not in the CSV export, so the label-based date parser matched nothing and silently fell back to "1 day elapsed." That left the countdown blank and inflated the projection (clan value × 7). The parser now bounds at the `PLAYER` row, takes the last three datetime-with-time cells as Start / End / Updated, and reads the first two positive numbers after Updated as quota and goal (via `num()`, which strips spaces like `4 000` before parseFloat) — independent of labels and column position.
 
 ## [1.1.0] - 2026-06-26
 
@@ -36,6 +36,6 @@ Initial release.
 - Archive scaffolding (`ARCHIVE_SHEETS`) for recurring cycles.
 - Embedded snapshot fallback for offline/preview rendering; PWA-installable; `noindex`.
 
-[1.1.1]: https://github.com/warbuxx87/awo-hunt-tracker/releases/tag/v1.1.1
-[1.1.0]: https://github.com/warbuxx87/awo-hunt-tracker/releases/tag/v1.1.0
-[1.0.0]: https://github.com/warbuxx87/awo-hunt-tracker/releases/tag/v1.0.0
+[1.1.1]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.1.1
+[1.1.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.1.0
+[1.0.0]: https://github.com/warbuxx87/awo-main-203/releases/tag/v1.0.0
