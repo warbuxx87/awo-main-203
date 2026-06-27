@@ -146,8 +146,10 @@
   /* ---------- KPIs ---------- */
   .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
   @media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  .kpi{background:var(--pelt-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px}
-  .kpi .k{font-family:"Cinzel",serif;font-weight:700;font-size:25px;color:var(--moon);line-height:1;font-feature-settings:"lnum" 1,"tnum" 1}
+  .kpis.kpis-4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:760px){.kpis.kpis-4{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--pelt-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:14px;min-width:0}
+  .kpi .k{font-family:"Cinzel",serif;font-weight:700;font-size:25px;color:var(--moon);line-height:1;font-feature-settings:"lnum" 1,"tnum" 1;overflow-wrap:anywhere}
   .kpi .l{font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.14em;font-size:9.5px;color:var(--silver);margin-top:8px}
   .kpi.accent .k{color:var(--gold-hi)}
 
@@ -324,6 +326,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.8.2", date:"2026-06-26", sections:[
+    { label:"Fixed", items:["Events page stat cards overflowed on mobile — now collapse to 2 columns."] }
+  ]},
   { version:"1.8.1", date:"2026-06-26", sections:[
     { label:"Changed", items:["Mobile polish: horizontal-scroll tables and a tighter header on small screens."] }
   ]},
@@ -994,7 +999,7 @@ function viewEvents(s){
     +'<div class="pills">'+pills+'</div>';
   if(!groupSources.length)
     return h+'<div class="empty" style="margin-top:10px">No chests from <b>'+esc(grp.label)+'</b> have been opened yet.</div></div>';
-  h+='<div class="kpis" style="margin-top:18px;grid-template-columns:repeat(4,1fr)">'
+  h+='<div class="kpis kpis-4" style="margin-top:18px">'
     +kpi(fmt(clanOpens),"Chests opened")
     +kpi(fmt(participants.length)+' / '+fmt(s.players.length),"Participated",true)
     +kpi(fmt(s.players.length-participants.length),"Sat out")
