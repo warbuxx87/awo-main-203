@@ -82,6 +82,23 @@
   nav.tabs a:hover{color:var(--frost)}
   nav.tabs a.active{color:var(--gold-hi);background:var(--pelt);border-color:var(--line)}
 
+  /* ---------- bottom nav (mobile) ---------- */
+  .botnav{display:none}
+  @media(max-width:760px){
+    nav.tabs{display:none}
+    .wrap{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+    .botnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;justify-content:space-around;
+      background:rgba(10,7,6,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+    .botnav a{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+      padding:6px 2px;text-decoration:none;color:var(--silver);border-radius:var(--r-sm);
+      font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.05em;font-size:9px;
+      -webkit-tap-highlight-color:transparent;transition:color .15s}
+    .botnav a svg{width:22px;height:22px;display:block}
+    .botnav a.active{color:var(--gold-hi)}
+    .botnav a:active{background:var(--pelt)}
+  }
+
   /* ---------- panels ---------- */
   .panel{background:linear-gradient(180deg,var(--pelt),#140F0A);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;position:relative}
   .panel::before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(202,136,60,.35),transparent);border-radius:var(--r) var(--r) 0 0}
@@ -252,6 +269,14 @@
 
 <div class="scrim" id="scrim"><div class="modal" id="modal"></div></div>
 
+<nav class="botnav" id="botNav">
+  <a href="#overview" aria-label="Overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9h5v-5h4v5h5v-9"/></svg><span>Overview</span></a>
+  <a href="#leaderboard" aria-label="The Pack"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="10.5" r="1.9"/><circle cx="10.4" cy="6.8" r="1.9"/><circle cx="13.6" cy="6.8" r="1.9"/><circle cx="18" cy="10.5" r="1.9"/><path d="M12 12.2c-2.9 0-4.9 2.1-4.9 4.2 0 1.5 1.1 2.5 2.7 2.5 1 0 1.5-.4 2.2-.4s1.2.4 2.2.4c1.6 0 2.7-1 2.7-2.5 0-2.1-2-4.2-4.9-4.2z"/></svg><span>Pack</span></a>
+  <a href="#events" aria-label="Events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h7l-1 7 9-11h-7z"/></svg><span>Events</span></a>
+  <a href="#chests" aria-label="Chests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 5 4h14l2 5"/><path d="M3 9h18v10H3z"/><path d="M12 9v10"/><path d="M9.5 12.5h5"/></svg><span>Chests</span></a>
+  <a href="#history" aria-label="History"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.2"/><path d="M12 7.2v5l3.2 1.9"/></svg><span>History</span></a>
+</nav>
+
 <script>
 
 "use strict";
@@ -280,6 +305,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.8.0", date:"2026-06-26", sections:[
+    { label:"Added", items:["Mobile bottom navigation bar with icons."] }
+  ]},
   { version:"1.7.0", date:"2026-06-26", sections:[
     { label:"Added", items:["Live **Next sync** countdown to the next data refresh in the header."] }
   ]},
@@ -989,7 +1017,7 @@ function route(){
   const hash=(location.hash.replace("#","")||"overview");
   const view=ROUTES[hash]||viewOverview;
   $("#app").innerHTML=view(STATE);
-  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+hash));
+  document.querySelectorAll("#nav a, #botNav a").forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+hash));
   wire(hash);
   if(hash==="overview"){ animateGoal(STATE); setTimeout(()=>renderDist(STATE),30); }
 }
