@@ -75,6 +75,23 @@
   .refresh.spin .dot{background:var(--ember);animation:pulse 1s infinite}
   @keyframes pulse{50%{opacity:.25}}
 
+  /* ---------- mobile header + table polish ---------- */
+  @media(max-width:760px){
+    thead th,tbody td{white-space:nowrap}
+  }
+  @media(max-width:560px){
+    .top-in{gap:10px;padding:9px 14px}
+    .logo{height:40px}
+    .toolname{display:none}
+    .clock .val{font-size:15px}
+    .refresh{padding:7px 11px;font-size:10px}
+    table{font-size:14px}
+    thead th,tbody td{padding:9px 10px;white-space:nowrap}
+  }
+  @media(max-width:430px){
+    .nextsync{display:none}
+  }
+
   /* ---------- nav ---------- */
   nav.tabs{display:flex;gap:6px;margin:24px 0 20px;flex-wrap:wrap}
   nav.tabs a{font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.16em;font-size:12px;
@@ -141,7 +158,9 @@
   .seg button.on{background:var(--pelt-2);color:var(--gold-hi)}
 
   /* ---------- tables ---------- */
-  .tbl-wrap{overflow-x:auto}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .tbl-wrap::-webkit-scrollbar{height:6px}
+  .tbl-wrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
   table{width:100%;border-collapse:collapse;font-size:15.5px}
   thead th{font-family:"Cinzel",serif;text-transform:uppercase;letter-spacing:.1em;font-size:10px;color:var(--silver);
     text-align:right;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;cursor:pointer;user-select:none}
@@ -305,6 +324,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.8.1", date:"2026-06-26", sections:[
+    { label:"Changed", items:["Mobile polish: horizontal-scroll tables and a tighter header on small screens."] }
+  ]},
   { version:"1.8.0", date:"2026-06-26", sections:[
     { label:"Added", items:["Mobile bottom navigation bar with icons."] }
   ]},
