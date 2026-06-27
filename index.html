@@ -339,6 +339,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.9.11", date:"2026-06-26", sections:[
+    { label:"Fixed", items:["Wire Pack tab to lb.* i18n keys (headers, search, pace note)."] }
+  ]},
   { version:"1.9.10", date:"2026-06-26", sections:[
     { label:"Fixed", items:["Restore lb.* leaderboard translation keys (modal, Pack tab, Events columns)."] }
   ]},
@@ -953,10 +956,11 @@ function topList(s){
 let SORT={key:"value",dir:-1};
 let LBQ="";
 function viewLeaderboard(s){
+  const perDay=kfmt(s.summary.perDay);
   const cols=[
-    {k:"rank",t:"#",l:true},{k:"name",t:"Hunter",l:true},
-    {k:"value",t:"Points"},{k:"count",t:"Chests"},{k:"eff",t:"Pts / chest"},
-    {k:"pace",t:"Pace / day"},{k:"quota",t:"Vs "+kfmt(s.summary.perDay)+" quota",l:true},{k:"status",t:"Status",l:true}
+    {k:"rank",t:"#",l:true},{k:"name",t:t("lb.colHunter"),l:true},
+    {k:"value",t:t("lb.colPoints")},{k:"count",t:t("lb.colChests")},{k:"eff",t:t("lb.colPtsPerChest")},
+    {k:"pace",t:t("lb.colPacePerDay")},{k:"quota",t:tf("lb.colQuota",{x:perDay}),l:true},{k:"status",t:t("lb.colStatus"),l:true}
   ];
   const arr=[...s.players].sort((a,b)=>{
     let x=a[SORT.key],y=b[SORT.key];
@@ -964,10 +968,10 @@ function viewLeaderboard(s){
     if(SORT.key==="name")return SORT.dir*String(a.name).localeCompare(b.name);
     return SORT.dir*((x||0)-(y||0));
   });
-  let h='<div class="panel"><p class="eyebrow">'+s.players.length+' hunters · '+s.onQuota+' on pace · '+s.idle+' idle</p>'
-    +'<h2 class="sec">Leaderboard</h2>'
+  let h='<div class="panel"><p class="eyebrow">'+tf("lb.eyebrow",{n:s.players.length,on:s.onQuota,idle:s.idle})+'</p>'
+    +'<h2 class="sec">'+t("lb.leaderboard")+'</h2>'
     +'<div class="filter-row">'
-      +'<input id="lbSearch" type="text" placeholder="Search hunter…" value="'+esc(LBQ)+'" autocomplete="off" spellcheck="false" />'
+      +'<input id="lbSearch" type="text" placeholder="'+esc(t("lb.searchPlaceholder"))+'" value="'+esc(LBQ)+'" autocomplete="off" spellcheck="false" />'
       +'<span class="filter-hint" id="lbHint"></span>'
     +'</div>'
     +'<div class="tbl-wrap"><table><thead><tr>';
@@ -989,7 +993,7 @@ function viewLeaderboard(s){
   }
   return h+'</tbody></table></div>'
     +'<div id="lbNoMatch" class="empty" style="display:none">No hunter by that name.</div>'
-    +'<p class="dim" style="font-size:12.5px;margin-top:12px">Pace = points ÷ days elapsed. The amber line marks the '+fmt(s.summary.perDay)+'-pts/day quota; bars that reach it are on track.</p></div>';
+    +'<p class="dim" style="font-size:12.5px;margin-top:12px">'+tf("lb.paceNote",{perDay:fmt(s.summary.perDay)})+'</p></div>';
 }
 
 let CHSORT={key:"pts",dir:-1};
