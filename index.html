@@ -331,6 +331,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.9.5", date:"2026-06-26", sections:[
+    { label:"Added", items:["Chests tab translated (10 languages)."] }
+  ]},
   { version:"1.9.4", date:"2026-06-26", sections:[
     { label:"Added", items:["Events tab translated (10 languages)."] }
   ]},
@@ -761,6 +764,19 @@ const I18N_EVENTS={
   tr:{"ev.noGroups":"Yap\u0131land\u0131r\u0131lm\u0131\u015f etkinlik grubu yok.","ev.participation":"Etkinlik kat\u0131l\u0131m\u0131","ev.noChests":"<b>{label}</b> etkinli\u011finden hen\u00fcz sand\u0131k a\u00e7\u0131lmad\u0131.","ev.kpiParticipated":"Kat\u0131ld\u0131","ev.kpiSatOut":"Kat\u0131lmad\u0131","ev.kpiTopOpener":"En \u00e7ok a\u00e7an","ev.sourcesInEvent":"Bu etkinlikteki kaynaklar","ev.groupLeaderboard":"{label} s\u0131ralamas\u0131","ev.showSatOut":"kat\u0131lmayan avc\u0131lar\u0131 g\u00f6ster","ev.colOpens":"A\u00e7\u0131l\u0131\u015f","ev.colRelative":"G\u00f6reli","ev.colPctEvent":"% etkinlik","ev.statusIn":"Kat\u0131ld\u0131","ev.statusOut":"Yok"}
 };
 for(const l in I18N_EVENTS){ if(I18N[l]) Object.assign(I18N[l],I18N_EVENTS[l]); }
+const I18N_CHESTS={
+  en:{"ch.colSource":"Source","ch.colOpens":"Opens","ch.colPtsEach":"Pts each","ch.colTotalPoints":"Total points","ch.colPctScore":"% of score","ch.eyebrow":"{n} active sources","ch.whatScores":"What actually scores","ch.noPoints":"\u00b7 no points","ch.wastedNote":"<span class=\"wasted\">{wasted} chests</span> were opened on sources worth zero points this event \u2014 effort that didn't move the score."},
+  es:{"ch.colSource":"Fuente","ch.colOpens":"Aperturas","ch.colPtsEach":"Pts c/u","ch.colTotalPoints":"Puntos totales","ch.colPctScore":"% del total","ch.eyebrow":"{n} fuentes activas","ch.whatScores":"Lo que realmente punt\u00faa","ch.noPoints":"\u00b7 sin puntos","ch.wastedNote":"<span class=\"wasted\">{wasted} cofres</span> se abrieron en fuentes que no val\u00edan puntos este evento \u2014 esfuerzo que no movi\u00f3 la puntuaci\u00f3n."},
+  fr:{"ch.colSource":"Source","ch.colOpens":"Ouvertures","ch.colPtsEach":"Pts/unit\u00e9","ch.colTotalPoints":"Points totaux","ch.colPctScore":"% du score","ch.eyebrow":"{n} sources actives","ch.whatScores":"Ce qui compte vraiment","ch.noPoints":"\u00b7 aucun point","ch.wastedNote":"<span class=\"wasted\">{wasted} coffres</span> ont \u00e9t\u00e9 ouverts sur des sources sans points cet \u00e9v\u00e9nement \u2014 un effort qui n'a pas fait bouger le score."},
+  it:{"ch.colSource":"Fonte","ch.colOpens":"Aperture","ch.colPtsEach":"Pti cad.","ch.colTotalPoints":"Punti totali","ch.colPctScore":"% del punteggio","ch.eyebrow":"{n} fonti attive","ch.whatScores":"Ci\u00f2 che conta davvero","ch.noPoints":"\u00b7 nessun punto","ch.wastedNote":"<span class=\"wasted\">{wasted} forzieri</span> sono stati aperti su fonti senza punti in questo evento \u2014 sforzo che non ha mosso il punteggio."},
+  de:{"ch.colSource":"Quelle","ch.colOpens":"\u00d6ffnungen","ch.colPtsEach":"Pkt je","ch.colTotalPoints":"Gesamtpunkte","ch.colPctScore":"% der Wertung","ch.eyebrow":"{n} aktive Quellen","ch.whatScores":"Was wirklich z\u00e4hlt","ch.noPoints":"\u00b7 keine Punkte","ch.wastedNote":"<span class=\"wasted\">{wasted} Truhen</span> wurden bei Quellen ohne Punkte in diesem Event ge\u00f6ffnet \u2014 M\u00fche, die die Wertung nicht bewegt hat."},
+  nl:{"ch.colSource":"Bron","ch.colOpens":"Openingen","ch.colPtsEach":"Ptn elk","ch.colTotalPoints":"Totaal punten","ch.colPctScore":"% van score","ch.eyebrow":"{n} actieve bronnen","ch.whatScores":"Wat echt scoort","ch.noPoints":"\u00b7 geen punten","ch.wastedNote":"<span class=\"wasted\">{wasted} kisten</span> zijn geopend bij bronnen zonder punten dit evenement \u2014 moeite die de score niet bewoog."},
+  pl:{"ch.colSource":"\u0179r\u00f3d\u0142o","ch.colOpens":"Otwarcia","ch.colPtsEach":"Pkt/szt.","ch.colTotalPoints":"\u0141\u0105czne punkty","ch.colPctScore":"% wyniku","ch.eyebrow":"{n} aktywnych \u017ar\u00f3de\u0142","ch.whatScores":"Co naprawd\u0119 si\u0119 liczy","ch.noPoints":"\u00b7 bez punkt\u00f3w","ch.wastedNote":"<span class=\"wasted\">{wasted} skrzy\u0144</span> otwarto na \u017ar\u00f3d\u0142ach bez punkt\u00f3w w tym wydarzeniu \u2014 wysi\u0142ek, kt\u00f3ry nie ruszy\u0142 wyniku."},
+  ru:{"ch.colSource":"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a","ch.colOpens":"\u041e\u0442\u043a\u0440\u044b\u0442\u0438\u044f","ch.colPtsEach":"\u041e\u0447\u043a. \u0437\u0430 \u0448\u0442.","ch.colTotalPoints":"\u0412\u0441\u0435\u0433\u043e \u043e\u0447\u043a\u043e\u0432","ch.colPctScore":"% \u043e\u0442 \u0441\u0447\u0451\u0442\u0430","ch.eyebrow":"{n} \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0445 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u043e\u0432","ch.whatScores":"\u0427\u0442\u043e \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e \u043f\u0440\u0438\u043d\u043e\u0441\u0438\u0442 \u043e\u0447\u043a\u0438","ch.noPoints":"\u00b7 \u0431\u0435\u0437 \u043e\u0447\u043a\u043e\u0432","ch.wastedNote":"<span class=\"wasted\">{wasted} \u0441\u0443\u043d\u0434\u0443\u043a\u043e\u0432</span> \u043e\u0442\u043a\u0440\u044b\u0442\u043e \u043d\u0430 \u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0430\u0445 \u0431\u0435\u0437 \u043e\u0447\u043a\u043e\u0432 \u0432 \u044d\u0442\u043e\u043c \u0441\u043e\u0431\u044b\u0442\u0438\u0438 \u2014 \u0443\u0441\u0438\u043b\u0438\u044f, \u043d\u0435 \u043f\u043e\u0432\u043b\u0438\u044f\u0432\u0448\u0438\u0435 \u043d\u0430 \u0441\u0447\u0451\u0442."},
+  ar:{"ch.colSource":"\u0627\u0644\u0645\u0635\u062f\u0631","ch.colOpens":"\u0627\u0644\u0641\u062a\u062d\u0627\u062a","ch.colPtsEach":"\u0646\u0642\u0627\u0637 \u0644\u0644\u0648\u062d\u062f\u0629","ch.colTotalPoints":"\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0646\u0642\u0627\u0637","ch.colPctScore":"% \u0645\u0646 \u0627\u0644\u0646\u062a\u064a\u062c\u0629","ch.eyebrow":"{n} \u0645\u0635\u0627\u062f\u0631 \u0646\u0634\u0637\u0629","ch.whatScores":"\u0645\u0627 \u064a\u0633\u062c\u0651\u0644 \u0641\u0639\u0644\u0627\u064b","ch.noPoints":"\u00b7 \u0628\u0644\u0627 \u0646\u0642\u0627\u0637","ch.wastedNote":"<span class=\"wasted\">{wasted} \u0635\u0646\u062f\u0648\u0642</span> \u0641\u064f\u062a\u062d\u062a \u0639\u0644\u0649 \u0645\u0635\u0627\u062f\u0631 \u0628\u0644\u0627 \u0646\u0642\u0627\u0637 \u0641\u064a \u0647\u0630\u0647 \u0627\u0644\u0641\u0639\u0627\u0644\u064a\u0629 \u2014 \u062c\u0647\u062f \u0644\u0645 \u064a\u062d\u0631\u0651\u0643 \u0627\u0644\u0646\u062a\u064a\u062c\u0629."},
+  tr:{"ch.colSource":"Kaynak","ch.colOpens":"A\u00e7\u0131l\u0131\u015f","ch.colPtsEach":"Adet puan","ch.colTotalPoints":"Toplam puan","ch.colPctScore":"% skor","ch.eyebrow":"{n} aktif kaynak","ch.whatScores":"As\u0131l skor getiren","ch.noPoints":"\u00b7 puan yok","ch.wastedNote":"<span class=\"wasted\">{wasted} sand\u0131k</span> bu etkinlikte puan getirmeyen kaynaklarda a\u00e7\u0131ld\u0131 \u2014 skoru hareket ettirmeyen \u00e7aba."}
+};
+for(const l in I18N_CHESTS){ if(I18N[l]) Object.assign(I18N[l],I18N_CHESTS[l]); }
 function detectLang(){
   try{ const sv=localStorage.getItem("awo_lang"); if(sv&&SUPPORTED_LANGS.includes(sv)) return sv; }catch(e){}
   const cands=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||"en"];
@@ -915,8 +931,8 @@ function viewLeaderboard(s){
 let CHSORT={key:"pts",dir:-1};
 function viewChests(s){
   const arr=[...s.sources].sort((a,b)=>CHSORT.dir*((a[CHSORT.key]||0)-(b[CHSORT.key]||0)));
-  const cols=[{k:"src",t:"Source",l:true},{k:"opens",t:"Opens"},{k:"w",t:"Pts each"},{k:"pts",t:"Total points"},{k:"share",t:"% of score"}];
-  let h='<div class="panel"><p class="eyebrow">'+s.sources.length+' active sources</p><h2 class="sec">What actually scores</h2>'
+  const cols=[{k:"src",t:t("ch.colSource"),l:true},{k:"opens",t:t("ch.colOpens")},{k:"w",t:t("ch.colPtsEach")},{k:"pts",t:t("ch.colTotalPoints")},{k:"share",t:t("ch.colPctScore")}];
+  let h='<div class="panel"><p class="eyebrow">'+tf("ch.eyebrow",{n:s.sources.length})+'</p><h2 class="sec">'+t("ch.whatScores")+'</h2>'
     +'<div class="tbl-wrap"><table><thead><tr>';
   for(const c of cols){
     const ar=CHSORT.key===c.k?'<span class="ar">'+(CHSORT.dir<0?'▼':'▲')+'</span>':'';
@@ -927,7 +943,7 @@ function viewChests(s){
     const share=d.pts/s.clanPts*100;
     const dead=d.w===0;
     h+='<tr>'
-      +'<td class="l" '+(dead?'style="color:var(--ember)"':'')+'>'+esc(d.src)+(dead?' <span class="dim" style="font-size:11px">· no points</span>':'')+'</td>'
+      +'<td class="l" '+(dead?'style="color:var(--ember)"':'')+'>'+esc(d.src)+(dead?' <span class="dim" style="font-size:11px">'+t("ch.noPoints")+'</span>':'')+'</td>'
       +'<td class="num">'+fmt(d.opens)+'</td>'
       +'<td class="num dim">'+(d.w?fmt(d.w):'0')+'</td>'
       +'<td class="num" style="color:'+(dead?'var(--silver)':'var(--moon)')+';font-weight:600">'+fmt(d.pts)+'</td>'
@@ -935,7 +951,7 @@ function viewChests(s){
   }
   const wasted=s.sources.filter(d=>d.w===0).reduce((x,d)=>x+d.opens,0);
   return h+'</tbody></table></div>'
-    +'<p class="dim" style="font-size:12.5px;margin-top:12px"><span class="wasted">'+fmt(wasted)+' chests</span> were opened on sources worth zero points this event — effort that didn\'t move the score.</p></div>';
+    +'<p class="dim" style="font-size:12.5px;margin-top:12px">'+tf("ch.wastedNote",{wasted:fmt(wasted)})+'</p></div>';
 }
 
 function viewHistory(s){
