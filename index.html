@@ -331,6 +331,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.9.4", date:"2026-06-26", sections:[
+    { label:"Added", items:["Events tab translated (10 languages)."] }
+  ]},
   { version:"1.9.3", date:"2026-06-26", sections:[
     { label:"Added", items:["German and Dutch — 10 languages."] }
   ]},
@@ -745,6 +748,19 @@ const I18N_OV={
   tr:{"ov.marchToGoal":"Hedefe y\u00fcr\u00fcy\u00fc\u015f","ov.subline":"%{pct} tamamland\u0131 \u00b7 g\u00fcn {day}/{total} \u00b7 {left} g\u00fcn kald\u0131","ov.pointsBanked":"Toplanan puan","ov.paceShouldBe":"Tempoya g\u00f6re olmam\u0131z gereken yer","ov.verdictAhead":"S\u00fcr\u00fc <b>temponun \u00f6n\u00fcnde</b> \u2014 tahmini biti\u015f yakla\u015f\u0131k <b>{proj}</b> (hedefin %{pct}'i).","ov.verdictBehind":"S\u00fcr\u00fc <b>temponun gerisinde</b> \u2014 mevcut h\u0131zla tahmini <b>{proj}</b> / {goal}.","ov.kpiScoring":"Puan alan avc\u0131lar","ov.kpiMeeting":"{x}/g\u00fcn yapan","ov.kpiChests":"A\u00e7\u0131lan sand\u0131k","ov.kpiIdle":"S\u00fcr\u00fcde bo\u015fta","ov.sourceBreakdown":"Kayna\u011fa g\u00f6re da\u011f\u0131l\u0131m","ov.whereFrom":"Nereden geliyor","ov.byPoints":"Puana g\u00f6re","ov.byOpens":"A\u00e7\u0131l\u0131\u015fa g\u00f6re","ov.sourceNote":"A\u00e7\u0131l\u0131\u015flar ve puanlar farkl\u0131 hik\u00e2yeler anlat\u0131r \u2014 en \u00e7ok a\u00e7\u0131lan sand\u0131klar \u00e7o\u011fu zaman puan getirmez, puan\u0131 ise birka\u00e7 y\u00fcksek seviye mezar ta\u015f\u0131r.","ov.frontOfPack":"S\u00fcr\u00fcn\u00fcn \u00f6n\u00fcnde","ov.topHunters":"En iyi avc\u0131lar"}
 };
 for(const l in I18N_OV){ if(I18N[l]) Object.assign(I18N[l],I18N_OV[l]); }
+const I18N_EVENTS={
+  en:{"ev.noGroups":"No event groups configured.","ev.participation":"Event participation","ev.noChests":"No chests from <b>{label}</b> have been opened yet.","ev.kpiParticipated":"Participated","ev.kpiSatOut":"Sat out","ev.kpiTopOpener":"Top opener","ev.sourcesInEvent":"Sources in this event","ev.groupLeaderboard":"{label} leaderboard","ev.showSatOut":"show hunters who sat out","ev.colOpens":"Opens","ev.colRelative":"Relative","ev.colPctEvent":"% of event","ev.statusIn":"In","ev.statusOut":"Out"},
+  es:{"ev.noGroups":"No hay grupos de eventos configurados.","ev.participation":"Participaci\u00f3n en eventos","ev.noChests":"A\u00fan no se han abierto cofres de <b>{label}</b>.","ev.kpiParticipated":"Participaron","ev.kpiSatOut":"Se quedaron fuera","ev.kpiTopOpener":"Mejor abridor","ev.sourcesInEvent":"Fuentes de este evento","ev.groupLeaderboard":"Clasificaci\u00f3n de {label}","ev.showSatOut":"mostrar cazadores que no participaron","ev.colOpens":"Aperturas","ev.colRelative":"Relativo","ev.colPctEvent":"% del evento","ev.statusIn":"Dentro","ev.statusOut":"Fuera"},
+  fr:{"ev.noGroups":"Aucun groupe d'\u00e9v\u00e9nements configur\u00e9.","ev.participation":"Participation aux \u00e9v\u00e9nements","ev.noChests":"Aucun coffre de <b>{label}</b> n'a encore \u00e9t\u00e9 ouvert.","ev.kpiParticipated":"Ont particip\u00e9","ev.kpiSatOut":"Absents","ev.kpiTopOpener":"Meilleur ouvreur","ev.sourcesInEvent":"Sources de cet \u00e9v\u00e9nement","ev.groupLeaderboard":"Classement {label}","ev.showSatOut":"afficher les chasseurs absents","ev.colOpens":"Ouvertures","ev.colRelative":"Relatif","ev.colPctEvent":"% de l'\u00e9v\u00e9nement","ev.statusIn":"Pr\u00e9sent","ev.statusOut":"Absent"},
+  it:{"ev.noGroups":"Nessun gruppo di eventi configurato.","ev.participation":"Partecipazione agli eventi","ev.noChests":"Nessun forziere di <b>{label}</b> \u00e8 stato ancora aperto.","ev.kpiParticipated":"Hanno partecipato","ev.kpiSatOut":"Assenti","ev.kpiTopOpener":"Miglior apritore","ev.sourcesInEvent":"Fonti di questo evento","ev.groupLeaderboard":"Classifica {label}","ev.showSatOut":"mostra i cacciatori assenti","ev.colOpens":"Aperture","ev.colRelative":"Relativo","ev.colPctEvent":"% dell'evento","ev.statusIn":"Presente","ev.statusOut":"Assente"},
+  de:{"ev.noGroups":"Keine Event-Gruppen konfiguriert.","ev.participation":"Event-Teilnahme","ev.noChests":"Es wurden noch keine Truhen von <b>{label}</b> ge\u00f6ffnet.","ev.kpiParticipated":"Teilgenommen","ev.kpiSatOut":"Ausgesetzt","ev.kpiTopOpener":"Top-\u00d6ffner","ev.sourcesInEvent":"Quellen in diesem Event","ev.groupLeaderboard":"{label}-Rangliste","ev.showSatOut":"J\u00e4ger anzeigen, die ausgesetzt haben","ev.colOpens":"\u00d6ffnungen","ev.colRelative":"Relativ","ev.colPctEvent":"% des Events","ev.statusIn":"Dabei","ev.statusOut":"Raus"},
+  nl:{"ev.noGroups":"Geen evenementgroepen geconfigureerd.","ev.participation":"Deelname aan evenementen","ev.noChests":"Er zijn nog geen kisten van <b>{label}</b> geopend.","ev.kpiParticipated":"Deelgenomen","ev.kpiSatOut":"Overgeslagen","ev.kpiTopOpener":"Beste opener","ev.sourcesInEvent":"Bronnen in dit evenement","ev.groupLeaderboard":"{label}-ranglijst","ev.showSatOut":"toon jagers die niet meededen","ev.colOpens":"Openingen","ev.colRelative":"Relatief","ev.colPctEvent":"% van evenement","ev.statusIn":"Mee","ev.statusOut":"Niet"},
+  pl:{"ev.noGroups":"Nie skonfigurowano grup wydarze\u0144.","ev.participation":"Udzia\u0142 w wydarzeniach","ev.noChests":"Nie otwarto jeszcze \u017cadnych skrzy\u0144 z <b>{label}</b>.","ev.kpiParticipated":"Wzi\u0119\u0142o udzia\u0142","ev.kpiSatOut":"Pomin\u0119\u0142o","ev.kpiTopOpener":"Najlepszy otwieraj\u0105cy","ev.sourcesInEvent":"\u0179r\u00f3d\u0142a w tym wydarzeniu","ev.groupLeaderboard":"Ranking {label}","ev.showSatOut":"poka\u017c \u0142owc\u00f3w, kt\u00f3rzy nie brali udzia\u0142u","ev.colOpens":"Otwarcia","ev.colRelative":"Wzgl\u0119dnie","ev.colPctEvent":"% wydarzenia","ev.statusIn":"Obecny","ev.statusOut":"Nieobecny"},
+  ru:{"ev.noGroups":"\u0413\u0440\u0443\u043f\u043f\u044b \u0441\u043e\u0431\u044b\u0442\u0438\u0439 \u043d\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d\u044b.","ev.participation":"\u0423\u0447\u0430\u0441\u0442\u0438\u0435 \u0432 \u0441\u043e\u0431\u044b\u0442\u0438\u044f\u0445","ev.noChests":"\u0421\u0443\u043d\u0434\u0443\u043a\u0438 \u0438\u0437 <b>{label}</b> \u0435\u0449\u0451 \u043d\u0435 \u043e\u0442\u043a\u0440\u044b\u0432\u0430\u043b\u0438\u0441\u044c.","ev.kpiParticipated":"\u0423\u0447\u0430\u0441\u0442\u0432\u043e\u0432\u0430\u043b\u0438","ev.kpiSatOut":"\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b\u0438","ev.kpiTopOpener":"\u041b\u0443\u0447\u0448\u0438\u0439 \u043f\u043e \u043e\u0442\u043a\u0440\u044b\u0442\u0438\u044f\u043c","ev.sourcesInEvent":"\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0438 \u0432 \u044d\u0442\u043e\u043c \u0441\u043e\u0431\u044b\u0442\u0438\u0438","ev.groupLeaderboard":"\u0422\u0430\u0431\u043b\u0438\u0446\u0430: {label}","ev.showSatOut":"\u043f\u043e\u043a\u0430\u0437\u0430\u0442\u044c \u043e\u0445\u043e\u0442\u043d\u0438\u043a\u043e\u0432, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b\u0438","ev.colOpens":"\u041e\u0442\u043a\u0440\u044b\u0442\u0438\u044f","ev.colRelative":"\u041e\u0442\u043d\u043e\u0441\u0438\u0442\u0435\u043b\u044c\u043d\u043e","ev.colPctEvent":"% \u0441\u043e\u0431\u044b\u0442\u0438\u044f","ev.statusIn":"\u0423\u0447\u0430\u0441\u0442\u0432\u0443\u0435\u0442","ev.statusOut":"\u041f\u0440\u043e\u043f\u0443\u0441\u0442\u0438\u043b"},
+  ar:{"ev.noGroups":"\u0644\u0627 \u062a\u0648\u062c\u062f \u0645\u062c\u0645\u0648\u0639\u0627\u062a \u0641\u0639\u0627\u0644\u064a\u0627\u062a \u0645\u0647\u064a\u0651\u0623\u0629.","ev.participation":"\u0627\u0644\u0645\u0634\u0627\u0631\u0643\u0629 \u0641\u064a \u0627\u0644\u0641\u0639\u0627\u0644\u064a\u0627\u062a","ev.noChests":"\u0644\u0645 \u062a\u064f\u0641\u062a\u062d \u0628\u0639\u062f \u0623\u064a \u0635\u0646\u0627\u062f\u064a\u0642 \u0645\u0646 <b>{label}</b>.","ev.kpiParticipated":"\u0634\u0627\u0631\u0643\u0648\u0627","ev.kpiSatOut":"\u062a\u063a\u064a\u0651\u0628\u0648\u0627","ev.kpiTopOpener":"\u0627\u0644\u0623\u0643\u062b\u0631 \u0641\u062a\u062d\u064b\u0627","ev.sourcesInEvent":"\u0645\u0635\u0627\u062f\u0631 \u0647\u0630\u0647 \u0627\u0644\u0641\u0639\u0627\u0644\u064a\u0629","ev.groupLeaderboard":"\u0644\u0648\u062d\u0629 {label}","ev.showSatOut":"\u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0635\u064a\u0651\u0627\u062f\u064a\u0646 \u0627\u0644\u0630\u064a\u0646 \u062a\u063a\u064a\u0651\u0628\u0648\u0627","ev.colOpens":"\u0627\u0644\u0641\u062a\u062d\u0627\u062a","ev.colRelative":"\u0646\u0633\u0628\u064a","ev.colPctEvent":"% \u0645\u0646 \u0627\u0644\u0641\u0639\u0627\u0644\u064a\u0629","ev.statusIn":"\u0645\u0634\u0627\u0631\u0643","ev.statusOut":"\u063a\u0627\u0626\u0628"},
+  tr:{"ev.noGroups":"Yap\u0131land\u0131r\u0131lm\u0131\u015f etkinlik grubu yok.","ev.participation":"Etkinlik kat\u0131l\u0131m\u0131","ev.noChests":"<b>{label}</b> etkinli\u011finden hen\u00fcz sand\u0131k a\u00e7\u0131lmad\u0131.","ev.kpiParticipated":"Kat\u0131ld\u0131","ev.kpiSatOut":"Kat\u0131lmad\u0131","ev.kpiTopOpener":"En \u00e7ok a\u00e7an","ev.sourcesInEvent":"Bu etkinlikteki kaynaklar","ev.groupLeaderboard":"{label} s\u0131ralamas\u0131","ev.showSatOut":"kat\u0131lmayan avc\u0131lar\u0131 g\u00f6ster","ev.colOpens":"A\u00e7\u0131l\u0131\u015f","ev.colRelative":"G\u00f6reli","ev.colPctEvent":"% etkinlik","ev.statusIn":"Kat\u0131ld\u0131","ev.statusOut":"Yok"}
+};
+for(const l in I18N_EVENTS){ if(I18N[l]) Object.assign(I18N[l],I18N_EVENTS[l]); }
 function detectLang(){
   try{ const sv=localStorage.getItem("awo_lang"); if(sv&&SUPPORTED_LANGS.includes(sv)) return sv; }catch(e){}
   const cands=(navigator.languages&&navigator.languages.length)?navigator.languages:[navigator.language||"en"];
@@ -1045,7 +1061,7 @@ let EVTZEROS = false;
 
 function viewEvents(s){
   if(!EVENT_GROUPS.length)
-    return '<div class="panel"><div class="empty">No event groups configured.</div></div>';
+    return '<div class="panel"><div class="empty">'+t("ev.noGroups")+'</div></div>';
   const grp = EVENT_GROUPS.find(g=>g.id===EVTSEL) || EVENT_GROUPS[0];
   const inGroup = src => grp.match.some(m=>src.toLowerCase().includes(m.toLowerCase()));
   const groupSources = s.sources.filter(d=>inGroup(d.src));
@@ -1059,25 +1075,25 @@ function viewEvents(s){
   const top = participants[0];
   const pills = EVENT_GROUPS.map(g=>
     '<button class="pill'+(g.id===grp.id?' on':'')+'" data-evt="'+g.id+'">'+esc(g.label)+'</button>').join('');
-  let h='<div class="panel"><p class="eyebrow">Event participation</p>'
+  let h='<div class="panel"><p class="eyebrow">'+t("ev.participation")+'</p>'
     +'<div class="pills">'+pills+'</div>';
   if(!groupSources.length)
-    return h+'<div class="empty" style="margin-top:10px">No chests from <b>'+esc(grp.label)+'</b> have been opened yet.</div></div>';
+    return h+'<div class="empty" style="margin-top:10px">'+tf("ev.noChests",{label:esc(grp.label)})+'</div></div>';
   h+='<div class="kpis kpis-4" style="margin-top:18px">'
-    +kpi(fmt(clanOpens),"Chests opened")
-    +kpi(fmt(participants.length)+' / '+fmt(s.players.length),"Participated",true)
-    +kpi(fmt(s.players.length-participants.length),"Sat out")
-    +kpi(top?esc(top.name):'—',"Top opener")
+    +kpi(fmt(clanOpens),t("ov.kpiChests"))
+    +kpi(fmt(participants.length)+' / '+fmt(s.players.length),t("ev.kpiParticipated"),true)
+    +kpi(fmt(s.players.length-participants.length),t("ev.kpiSatOut"))
+    +kpi(top?esc(top.name):'—',t("ev.kpiTopOpener"))
    +'</div>';
   if(groupSources.length>1){
     const srcRows=[...groupSources].sort((a,b)=>b.opens-a.opens).map(d=>
       '<tr><td class="l">'+esc(d.src)+'</td><td class="num">'+fmt(d.opens)+'</td></tr>').join('');
-    h+='<p class="eyebrow" style="margin-top:22px">Sources in this event</p>'
+    h+='<p class="eyebrow" style="margin-top:22px">'+t("ev.sourcesInEvent")+'</p>'
       +'<div class="tbl-wrap"><table><tbody>'+srcRows+'</tbody></table></div>';
   }
   h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-top:22px;flex-wrap:wrap;gap:10px">'
-    +'<h2 class="sec" style="margin:0">'+esc(grp.label)+' leaderboard</h2>'
-    +'<label class="evttoggle"><input type="checkbox" id="evtZeros"'+(EVTZEROS?' checked':'')+' /> show hunters who sat out</label>'
+    +'<h2 class="sec" style="margin:0">'+tf("ev.groupLeaderboard",{label:esc(grp.label)})+'</h2>'
+    +'<label class="evttoggle"><input type="checkbox" id="evtZeros"'+(EVTZEROS?' checked':'')+' /> '+t("ev.showSatOut")+'</label>'
    +'</div>';
   const list = EVTZEROS ? ranked : participants;
   const maxOpens = participants.length ? participants[0].opens : 1;
@@ -1091,10 +1107,10 @@ function viewEvents(s){
       +'<td class="num" style="color:var(--moon);font-weight:600">'+fmt(p.opens)+'</td>'
       +'<td class="l" style="width:130px"><span class="qbar"><span class="qf" style="width:'+barpct+'%"></span></span></td>'
       +'<td class="num dim">'+(pct>=0.05?pct.toFixed(1)+'%':'—')+'</td>'
-      +'<td class="l">'+(p.opens>0?'<span class="badge b-hunt">In</span>':'<span class="badge b-idle">Out</span>')+'</td></tr>';
+      +'<td class="l">'+(p.opens>0?'<span class="badge b-hunt">'+t("ev.statusIn")+'</span>':'<span class="badge b-idle">'+t("ev.statusOut")+'</span>')+'</td></tr>';
   });
   h+='<div class="tbl-wrap"><table><thead><tr>'
-    +'<th class="l">#</th><th class="l">Hunter</th><th>Opens</th><th class="l">Relative</th><th>% of event</th><th class="l">Status</th>'
+    +'<th class="l">#</th><th class="l">'+t("lb.colHunter")+'</th><th>'+t("ev.colOpens")+'</th><th class="l">'+t("ev.colRelative")+'</th><th>'+t("ev.colPctEvent")+'</th><th class="l">'+t("lb.colStatus")+'</th>'
     +'</tr></thead><tbody id="evtBody">'+rows+'</tbody></table></div>';
   return h+'</div>';
 }
