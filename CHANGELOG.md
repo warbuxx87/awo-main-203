@@ -5,67 +5,67 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.9.12] - 2026-06-26
+## [1.9.12] - 2026-06-27
 
 ### Added
 - Translate footer; add chest/event source-name translation engine.
 
-## [1.9.11] - 2026-06-26
+## [1.9.11] - 2026-06-27
 
 ### Fixed
 - Wire Pack tab to lb.* i18n keys (headers, search, pace note).
 
-## [1.9.10] - 2026-06-26
+## [1.9.10] - 2026-06-27
 
 ### Fixed
 - Restore lb.* leaderboard translation keys (modal, Pack tab, Events columns).
 
-## [1.9.9] - 2026-06-26
+## [1.9.9] - 2026-06-27
 
 ### Fixed
 - Fix mobile header overflow: icon-only buttons, single-line countdown.
 
-## [1.9.8] - 2026-06-26
+## [1.9.8] - 2026-06-27
 
 ### Added
 - Translate remaining UI chrome — tooltips, charts, changelog, errors, aria-labels.
 
-## [1.9.7] - 2026-06-26
+## [1.9.7] - 2026-06-27
 
 ### Added
 - History tab and player modal translated (10 languages).
 
-## [1.9.6] - 2026-06-26
+## [1.9.6] - 2026-06-27
 
 ### Fixed
 - Flag-based language switcher; fix mobile header overflow.
 
-## [1.9.5] - 2026-06-26
+## [1.9.5] - 2026-06-27
 
 ### Added
 - Chests tab translated (10 languages).
 
-## [1.9.4] - 2026-06-26
+## [1.9.4] - 2026-06-27
 
 ### Added
 - Events tab translated (10 languages).
 
-## [1.9.3] - 2026-06-26
+## [1.9.3] - 2026-06-27
 
 ### Added
 - German and Dutch — 10 languages.
 
-## [1.9.2] - 2026-06-26
+## [1.9.2] - 2026-06-27
 
 ### Added
 - Overview tab translated (8 languages).
 
-## [1.9.1] - 2026-06-26
+## [1.9.1] - 2026-06-27
 
 ### Added
 - Italian and Polish locales.
 
-## [1.9.0] - 2026-06-26
+## [1.9.0] - 2026-06-27
 
 ### Added
 - Multilingual support (EN/ES/FR/RU/AR/TR) with browser-language detection, a switcher, and Arabic RTL — navigation, header, status, and footer translated; tab content next.

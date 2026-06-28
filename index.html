@@ -339,43 +339,43 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
-  { version:"1.9.12", date:"2026-06-26", sections:[
+  { version:"1.9.12", date:"2026-06-27", sections:[
     { label:"Added", items:["Translate footer; add chest/event source-name translation engine."] }
   ]},
-  { version:"1.9.11", date:"2026-06-26", sections:[
+  { version:"1.9.11", date:"2026-06-27", sections:[
     { label:"Fixed", items:["Wire Pack tab to lb.* i18n keys (headers, search, pace note)."] }
   ]},
-  { version:"1.9.10", date:"2026-06-26", sections:[
+  { version:"1.9.10", date:"2026-06-27", sections:[
     { label:"Fixed", items:["Restore lb.* leaderboard translation keys (modal, Pack tab, Events columns)."] }
   ]},
-  { version:"1.9.9", date:"2026-06-26", sections:[
+  { version:"1.9.9", date:"2026-06-27", sections:[
     { label:"Fixed", items:["Fix mobile header overflow: icon-only buttons, single-line countdown."] }
   ]},
-  { version:"1.9.8", date:"2026-06-26", sections:[
+  { version:"1.9.8", date:"2026-06-27", sections:[
     { label:"Added", items:["Translate remaining UI chrome — tooltips, charts, changelog, errors, aria-labels."] }
   ]},
-  { version:"1.9.7", date:"2026-06-26", sections:[
+  { version:"1.9.7", date:"2026-06-27", sections:[
     { label:"Added", items:["History tab and player modal translated (10 languages)."] }
   ]},
-  { version:"1.9.6", date:"2026-06-26", sections:[
+  { version:"1.9.6", date:"2026-06-27", sections:[
     { label:"Fixed", items:["Flag-based language switcher; fix mobile header overflow."] }
   ]},
-  { version:"1.9.5", date:"2026-06-26", sections:[
+  { version:"1.9.5", date:"2026-06-27", sections:[
     { label:"Added", items:["Chests tab translated (10 languages)."] }
   ]},
-  { version:"1.9.4", date:"2026-06-26", sections:[
+  { version:"1.9.4", date:"2026-06-27", sections:[
     { label:"Added", items:["Events tab translated (10 languages)."] }
   ]},
-  { version:"1.9.3", date:"2026-06-26", sections:[
+  { version:"1.9.3", date:"2026-06-27", sections:[
     { label:"Added", items:["German and Dutch — 10 languages."] }
   ]},
-  { version:"1.9.2", date:"2026-06-26", sections:[
+  { version:"1.9.2", date:"2026-06-27", sections:[
     { label:"Added", items:["Overview tab translated (8 languages)."] }
   ]},
-  { version:"1.9.1", date:"2026-06-26", sections:[
+  { version:"1.9.1", date:"2026-06-27", sections:[
     { label:"Added", items:["Italian and Polish locales."] }
   ]},
-  { version:"1.9.0", date:"2026-06-26", sections:[
+  { version:"1.9.0", date:"2026-06-27", sections:[
     { label:"Added", items:["Multilingual support (EN/ES/FR/RU/AR/TR) with browser-language detection, a switcher, and Arabic RTL — navigation, header, status, and footer translated; tab content next."] }
   ]},
   { version:"1.8.2", date:"2026-06-26", sections:[
@@ -421,6 +421,17 @@ const CHANGELOG = [
     { label:"Added", items:["Initial release \u2014 live gviz dashboard, client-side scoring from ChestMatrix \u00d7 Points, quota tracking, pace-line, snapshot fallback."] }
   ]}
 ];
+
+const CHANGELOG_TAG_DATES = {
+  "1.1.0":"2026-06-26","1.1.1":"2026-06-26","1.2.0":"2026-06-26","1.3.0":"2026-06-26",
+  "1.4.0":"2026-06-26","1.5.0":"2026-06-26","1.6.0":"2026-06-26","1.6.1":"2026-06-26",
+  "1.7.0":"2026-06-26","1.8.0":"2026-06-26","1.8.1":"2026-06-26","1.8.2":"2026-06-26",
+  "1.9.0":"2026-06-27","1.9.1":"2026-06-27","1.9.2":"2026-06-27","1.9.3":"2026-06-27",
+  "1.9.4":"2026-06-27","1.9.5":"2026-06-27","1.9.6":"2026-06-27","1.9.7":"2026-06-27",
+  "1.9.8":"2026-06-27","1.9.9":"2026-06-27","1.9.10":"2026-06-27","1.9.11":"2026-06-27",
+  "1.9.12":"2026-06-27"
+};
+function clDate(v){ return CHANGELOG_TAG_DATES[v.version]||v.date||""; }
 
 const FALLBACK_PER_DAY = 4000;     // per-hunter daily quota
 const FALLBACK_GOAL     = 100000;  // clan point goal
@@ -1185,7 +1196,7 @@ function mdInline(s){
 function openChangelog(){
   const body = CHANGELOG.map(v=>
     '<div class="cl-ver"><span class="cl-tag">v'+esc(v.version)+'</span>'
-      +(v.date?'<span class="cl-date">'+esc(v.date)+'</span>':'')+'</div>'
+      +(clDate(v)?'<span class="cl-date">'+esc(clDate(v))+'</span>':'')+'</div>'
     + v.sections.map(sec=>
         '<p class="cl-sec">'+esc(sec.label)+'</p><ul class="cl-list">'
         + sec.items.map(it=>'<li>'+mdInline(it)+'</li>').join('')
