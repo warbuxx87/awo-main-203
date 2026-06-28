@@ -339,6 +339,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.9.12", date:"2026-06-26", sections:[
+    { label:"Added", items:["Translate footer; add chest/event source-name translation engine."] }
+  ]},
   { version:"1.9.11", date:"2026-06-26", sections:[
     { label:"Fixed", items:["Wire Pack tab to lb.* i18n keys (headers, search, pace note)."] }
   ]},
@@ -816,6 +819,19 @@ const I18N_HISTMOD={
   tr:{"hist.empty":"Hen\u00fcz ar\u015fivlenmi\u015f av yok.","hist.emptyHelp":"Bu etkinlik kapand\u0131\u011f\u0131nda sayfay\u0131 kopyala ve beti\u011fin ba\u015f\u0131ndaki {code} listesine ekle (en yeni \u00f6nce). D\u00f6ng\u00fcler aras\u0131 kar\u015f\u0131la\u015ft\u0131rma, kar\u015f\u0131la\u015ft\u0131r\u0131lacak ge\u00e7mi\u015f olu\u015ftu\u011funda otomatik a\u00e7\u0131l\u0131r.","hist.pastHunts":"{n} ge\u00e7mi\u015f av","hist.cycleHistory":"D\u00f6ng\u00fc ge\u00e7mi\u015fi","hist.detected":"Ar\u015fivlenmi\u015f d\u00f6ng\u00fcler alg\u0131land\u0131 \u2014 kar\u015f\u0131la\u015ft\u0131rma g\u00f6r\u00fcn\u00fcm\u00fc ba\u011flanmaya haz\u0131r.","modal.rank":"S\u0131ra #{n}","modal.barNote":"\u00c7ubuk = bug\u00fcn\u00fcn temposu, {perDay}/g\u00fcn kotas\u0131na kar\u015f\u0131 (kehribar \u00e7izgi).","modal.pointsAttribution":"Puan da\u011f\u0131l\u0131m\u0131","modal.wastedNote":"<span class=\"wasted\">{wasted} sand\u0131k</span> puans\u0131z kaynaklarda a\u00e7\u0131ld\u0131."}
 };
 for(const l in I18N_HISTMOD){ if(I18N[l]) Object.assign(I18N[l],I18N_HISTMOD[l]); }
+const I18N_FOOT={
+  en:{"foot.note":"Live from {clan} via Google Sheets \u00b7 points recomputed from {formula}, independent of the summary tab \u00b7 auto-refreshes every ~2h \u00b7 {motto}"},
+  es:{"foot.note":"En vivo desde {clan} v\u00eda Google Sheets \u00b7 puntos recalculados desde {formula}, independiente de la pesta\u00f1a de resumen \u00b7 se actualiza cada ~2 h \u00b7 {motto}"},
+  fr:{"foot.note":"En direct depuis {clan} via Google Sheets \u00b7 points recalcul\u00e9s \u00e0 partir de {formula}, ind\u00e9pendamment de l'onglet r\u00e9sum\u00e9 \u00b7 actualisation toutes les ~2 h \u00b7 {motto}"},
+  it:{"foot.note":"In diretta da {clan} tramite Google Sheets \u00b7 punti ricalcolati da {formula}, indipendentemente dalla scheda riepilogo \u00b7 si aggiorna ogni ~2 h \u00b7 {motto}"},
+  de:{"foot.note":"Live von {clan} \u00fcber Google Sheets \u00b7 Punkte neu berechnet aus {formula}, unabh\u00e4ngig vom \u00dcbersichts-Tab \u00b7 aktualisiert alle ~2 Std. \u00b7 {motto}"},
+  nl:{"foot.note":"Live van {clan} via Google Sheets \u00b7 punten herberekend uit {formula}, onafhankelijk van het overzichtstabblad \u00b7 ververst elke ~2 u \u00b7 {motto}"},
+  pl:{"foot.note":"Na \u017cywo z {clan} przez Google Sheets \u00b7 punkty przeliczane z {formula}, niezale\u017cnie od karty podsumowania \u00b7 od\u015bwie\u017ca si\u0119 co ~2 godz. \u00b7 {motto}"},
+  ru:{"foot.note":"\u0412 \u043f\u0440\u044f\u043c\u043e\u043c \u044d\u0444\u0438\u0440\u0435 \u0438\u0437 {clan} \u0447\u0435\u0440\u0435\u0437 Google Sheets \u00b7 \u043e\u0447\u043a\u0438 \u043f\u0435\u0440\u0435\u0441\u0447\u0438\u0442\u0430\u043d\u044b \u0438\u0437 {formula}, \u043d\u0435\u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e \u043e\u0442 \u0432\u043a\u043b\u0430\u0434\u043a\u0438 \u0441\u0432\u043e\u0434\u043a\u0438 \u00b7 \u043e\u0431\u043d\u043e\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u043a\u0430\u0436\u0434\u044b\u0435 ~2 \u0447 \u00b7 {motto}"},
+  ar:{"foot.note":"\u0645\u0628\u0627\u0634\u0631 \u0645\u0646 {clan} \u0639\u0628\u0631 Google Sheets \u00b7 \u062a\u064f\u0639\u0627\u062f \u0627\u0644\u0646\u0642\u0627\u0637 \u0645\u0646 {formula}\u060c \u0628\u0634\u0643\u0644 \u0645\u0633\u062a\u0642\u0644 \u0639\u0646 \u062a\u0628\u0648\u064a\u0628 \u0627\u0644\u0645\u0644\u062e\u0651\u0635 \u00b7 \u064a\u064f\u062d\u062f\u0651\u062b \u0643\u0644 ~2 \u0633\u0627\u0639\u0629 \u00b7 {motto}"},
+  tr:{"foot.note":"{clan} kayna\u011f\u0131ndan canl\u0131, Google Sheets \u00fczerinden \u00b7 puanlar {formula} \u00fczerinden yeniden hesaplan\u0131r, \u00f6zet sekmesinden ba\u011f\u0131ms\u0131z \u00b7 ~2 saatte bir yenilenir \u00b7 {motto}"}
+};
+for(const l in I18N_FOOT){ if(I18N[l]) Object.assign(I18N[l],I18N_FOOT[l]); }
 const I18N_PACKFIX={
   en:{"lb.eyebrow":"{n} hunters \u00b7 {on} on pace \u00b7 {idle} idle","lb.leaderboard":"Leaderboard","lb.colHunter":"Hunter","lb.colPoints":"Points","lb.colChests":"Chests","lb.colPtsPerChest":"Pts / chest","lb.colPacePerDay":"Pace / day","lb.colQuota":"Vs {x} quota","lb.colStatus":"Status","lb.paceNote":"Pace = points \u00f7 days elapsed. The amber line marks the {perDay}-pts/day quota; bars that reach it are on track.","lb.searchPlaceholder":"Search hunters\u2026"},
   es:{"lb.eyebrow":"{n} cazadores \u00b7 {on} en ritmo \u00b7 {idle} inactivos","lb.leaderboard":"Clasificaci\u00f3n","lb.colHunter":"Cazador","lb.colPoints":"Puntos","lb.colChests":"Cofres","lb.colPtsPerChest":"Pts / cofre","lb.colPacePerDay":"Ritmo / d\u00eda","lb.colQuota":"Vs cuota {x}","lb.colStatus":"Estado","lb.paceNote":"Ritmo = puntos \u00f7 d\u00edas transcurridos. La l\u00ednea \u00e1mbar marca la cuota de {perDay} pts/d\u00eda; las barras que la alcanzan van en ritmo.","lb.searchPlaceholder":"Buscar cazadores\u2026"},
@@ -851,6 +867,49 @@ function detectLang(){
 let LANG=detectLang();
 function t(k){ const d=I18N[LANG]||I18N.en; return (d&&d[k]!=null)?d[k]:(I18N.en[k]!=null?I18N.en[k]:k); }
 function tf(k,vars){ let str=t(k); if(vars) for(const p in vars) str=str.split("{"+p+"}").join(String(vars[p])); return str; }
+const SOURCE_I18N={
+  "Alchemy tournament":{},
+  "Clan wealth":{},
+  "Dark Omens event":{},
+  "Epic Ancient squad":{},
+  "Golden Chest":{"es":"Cofre dorado","fr":"Coffre dor\u00e9","it":"Forziere dorato","de":"Goldene Truhe","nl":"Gouden kist","pl":"Z\u0142ota skrzynia","ru":"\u0417\u043e\u043b\u043e\u0442\u043e\u0439 \u0441\u0443\u043d\u0434\u0443\u043a","ar":"\u0635\u0646\u062f\u0648\u0642 \u0630\u0647\u0628\u064a","tr":"Alt\u0131n sand\u0131k"},
+  "Level 10 Citadel":{},
+  "Level 10 Crypt":{},
+  "Level 10 rare Crypt":{},
+  "Level 10\u201314 Vault of the Ancients":{},
+  "Level 15 Citadel":{},
+  "Level 15 Crypt":{},
+  "Level 15 epic Crypt":{},
+  "Level 15 rare Crypt":{},
+  "Level 15\u201319 Vault of the Ancients":{},
+  "Level 20 Citadel":{},
+  "Level 20 Crypt":{},
+  "Level 20 epic Crypt":{},
+  "Level 20 rare Crypt":{},
+  "Level 20\u201324 Vault of the Ancients":{},
+  "Level 25 Citadel":{},
+  "Level 25 Crypt":{},
+  "Level 25 epic Crypt":{},
+  "Level 25 rare Crypt":{},
+  "Level 25\u201329 Vault of the Ancients":{},
+  "Level 30 Citadel":{},
+  "Level 30 rare Crypt":{},
+  "Level 30\u201334 Vault of the Ancients":{},
+  "Level 35 epic Crypt":{},
+  "Level 35\u201339 Vault of the Ancients":{},
+  "Level 40\u201344 Vault of the Ancients":{},
+  "Level 45 Vault of the Ancients":{},
+  "Level 5 Crypt":{},
+  "Magic Chest":{"es":"Cofre m\u00e1gico","fr":"Coffre magique","it":"Forziere magico","de":"Magische Truhe","nl":"Magische kist","pl":"Magiczna skrzynia","ru":"\u041c\u0430\u0433\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0441\u0443\u043d\u0434\u0443\u043a","ar":"\u0635\u0646\u062f\u0648\u0642 \u0633\u062d\u0631\u064a","tr":"Sihirli sand\u0131k"},
+  "Rise of the Ancients event":{},
+  "Sakura of Plenty":{},
+  "Silver Chest":{"es":"Cofre plateado","fr":"Coffre argent\u00e9","it":"Forziere argentato","de":"Silberne Truhe","nl":"Zilveren kist","pl":"Srebrna skrzynia","ru":"\u0421\u0435\u0440\u0435\u0431\u0440\u044f\u043d\u044b\u0439 \u0441\u0443\u043d\u0434\u0443\u043a","ar":"\u0635\u0646\u062f\u0648\u0642 \u0641\u0636\u064a","tr":"G\u00fcm\u00fc\u015f sand\u0131k"},
+  "Spoils of Dread event":{},
+  "Summoning Dark Omens":{},
+  "Union of Triumph personal reward":{}
+};
+function ts(src){ const m=SOURCE_I18N[src]; return (m&&m[LANG])||src; }
+function footerHTML(){ return tf("foot.note",{clan:'<code>[AWO] Alpha Wolves</code>',formula:'<code>ChestMatrix × Points</code>',motto:'<span style="color:var(--ice)">'+t("foot.motto")+'</span>'}); }
 function applyI18n(){
   const r=document.documentElement;
   r.lang=LANG; r.dir=RTL_LANGS.includes(LANG)?"rtl":"ltr";
@@ -859,6 +918,7 @@ function applyI18n(){
   document.querySelectorAll("[data-i18n-title]").forEach(el=>{ el.setAttribute("title",t(el.getAttribute("data-i18n-title"))); });
   document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label",t(el.getAttribute("data-i18n-aria"))); });
   const sel=document.getElementById("langSel"); if(sel) sel.value=LANG;
+  const ft=document.getElementById("appFooter"); if(ft && typeof footerHTML==="function") ft.innerHTML=footerHTML();
   if(typeof STATE!=="undefined" && STATE && typeof route==="function") route();
 }
 function setLang(l){ if(!SUPPORTED_LANGS.includes(l)) return; LANG=l; try{localStorage.setItem("awo_lang",l);}catch(e){} applyI18n(); }
@@ -1011,7 +1071,7 @@ function viewChests(s){
     const share=d.pts/s.clanPts*100;
     const dead=d.w===0;
     h+='<tr>'
-      +'<td class="l" '+(dead?'style="color:var(--ember)"':'')+'>'+esc(d.src)+(dead?' <span class="dim" style="font-size:11px">'+t("ch.noPoints")+'</span>':'')+'</td>'
+      +'<td class="l" '+(dead?'style="color:var(--ember)"':'')+'>'+esc(ts(d.src))+(dead?' <span class="dim" style="font-size:11px">'+t("ch.noPoints")+'</span>':'')+'</td>'
       +'<td class="num">'+fmt(d.opens)+'</td>'
       +'<td class="num dim">'+(d.w?fmt(d.w):'0')+'</td>'
       +'<td class="num" style="color:'+(dead?'var(--silver)':'var(--moon)')+';font-weight:600">'+fmt(d.pts)+'</td>'
@@ -1053,7 +1113,7 @@ function renderDist(s){
       formatter:p=>{const d=p[0];return d.name+"<br/><b style='color:#F2EAD8'>"+fmt(d.value)+"</b> "+unit;}},
     xAxis:{type:"value",axisLabel:{color:"#A1917A",fontFamily:"EB Garamond",fontSize:10},
       splitLine:{lineStyle:{color:"#241A12"}}},
-    yAxis:{type:"category",data:data.map(d=>d.src),
+    yAxis:{type:"category",data:data.map(d=>ts(d.src)),
       axisLabel:{color:"#E7DBC4",fontFamily:"EB Garamond",fontSize:11,width:160,overflow:"truncate"},
       axisLine:{lineStyle:{color:"#3A2C1E"}},axisTick:{show:false}},
     series:[{type:"bar",data:data.map(d=>d[key]),barWidth:"62%",
@@ -1076,9 +1136,9 @@ function renderAttr(p){
     grid:{left:8,right:48,top:10,bottom:10,containLabel:true},
     tooltip:{trigger:"axis",backgroundColor:"#1C140D",borderColor:"#3A2C1E",
       textStyle:{color:"#E7DBC4"},
-      formatter:t=>{const d=t[0],src=data[d.dataIndex];return src.src+"<br/><b style='color:#F2EAD8'>"+fmt(src.pts)+"</b> "+ptsLbl+" · "+src.cnt+" × "+fmt(src.w);}},
+      formatter:t=>{const d=t[0],src=data[d.dataIndex];return ts(src.src)+"<br/><b style='color:#F2EAD8'>"+fmt(src.pts)+"</b> "+ptsLbl+" · "+src.cnt+" × "+fmt(src.w);}},
     xAxis:{type:"value",axisLabel:{color:"#A1917A",fontFamily:"EB Garamond",fontSize:10},splitLine:{lineStyle:{color:"#241A12"}}},
-    yAxis:{type:"category",data:data.map(d=>d.src),
+    yAxis:{type:"category",data:data.map(d=>ts(d.src)),
       axisLabel:{color:"#E7DBC4",fontSize:11,width:150,overflow:"truncate"},
       axisLine:{lineStyle:{color:"#3A2C1E"}},axisTick:{show:false}},
     series:[{type:"bar",data:data.map(d=>d.pts),barWidth:"60%",
@@ -1095,7 +1155,7 @@ function openPlayer(name){
   const scored=p.bySource.reduce((x,d)=>x+d.pts,0)||1;
   const need=s.summary.perDay; const pacePct=Math.min(p.pace/need*100,100);
   let attr=p.bySource.slice(0,6).map(d=>
-    '<tr><td class="l">'+esc(d.src)+'</td><td class="num dim">'+d.cnt+' × '+fmt(d.w)+'</td>'
+    '<tr><td class="l">'+esc(ts(d.src))+'</td><td class="num dim">'+d.cnt+' × '+fmt(d.w)+'</td>'
     +'<td class="num" style="color:var(--moon)">'+fmt(d.pts)+'</td>'
     +'<td class="num dim">'+Math.round(d.pts/scored*100)+'%</td></tr>').join("");
 
@@ -1171,7 +1231,7 @@ function viewEvents(s){
    +'</div>';
   if(groupSources.length>1){
     const srcRows=[...groupSources].sort((a,b)=>b.opens-a.opens).map(d=>
-      '<tr><td class="l">'+esc(d.src)+'</td><td class="num">'+fmt(d.opens)+'</td></tr>').join('');
+      '<tr><td class="l">'+esc(ts(d.src))+'</td><td class="num">'+fmt(d.opens)+'</td></tr>').join('');
     h+='<p class="eyebrow" style="margin-top:22px">'+t("ev.sourcesInEvent")+'</p>'
       +'<div class="tbl-wrap"><table><tbody>'+srcRows+'</tbody></table></div>';
   }
@@ -1337,12 +1397,11 @@ function scheduleRefresh(fresh){
 }
 $("#refreshBtn").addEventListener("click",load);
 
-/* footer (static) */
+/* footer */
 (function(){
-  const f=document.createElement("footer"); f.className="wrap";
+  const f=document.createElement("footer"); f.className="wrap"; f.id="appFooter";
   f.style.cssText="max-width:1180px;margin:28px auto 0;padding:16px 18px 0";
-  f.innerHTML='Live from <code>[AWO] Alpha Wolves</code> via Google Sheets · points recomputed from '
-    +'<code>ChestMatrix × Points</code>, independent of the summary tab · auto-refreshes every ~2h · <span style="color:var(--ice)">'+t("foot.motto")+'</span>';
+  f.innerHTML=footerHTML();
   document.querySelector(".wrap").appendChild(f);
 })();
 
