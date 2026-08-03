@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-08-03
+
+### Added
+- **Ragnarök and Olympus** added to the Events tab. Tracked events: Ragnarök, Dark Omens, Olympus, Rise of the Ancients, Union of Triumph. Hermes' Store counts toward Olympus; Epic Jörmungandr squad, Jörmungandr Shop, and Epic Fenrir squad count toward Ragnarök. Union of Triumph event tab; Briareus → Olympus.
+- Event pill labels now translate; event names and their chest sources localized across all 10 languages.
+
 ## [1.9.12] - 2026-06-27
 
 ### Added
