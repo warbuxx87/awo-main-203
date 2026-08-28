@@ -8,7 +8,7 @@ Live analytics dashboard for the **Alpha Wolves** Total Battle clan. Reads clan 
 ![Netlify](https://img.shields.io/badge/deploy-Netlify-00C7B7?logo=netlify&logoColor=white)
 ![PWA](https://img.shields.io/badge/PWA-installable-5A0FC8?logo=pwa&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Version](https://img.shields.io/badge/version-1.11.0-informational)
+![Version](https://img.shields.io/badge/version-1.11.1-informational)
 
 ---
 
@@ -23,7 +23,7 @@ A single-file, zero-build dashboard (vanilla JS + Apache ECharts) that pulls cla
 
 ## How it works
 
-Scores, penalties, and the per-hunter requirement flag come from the **clan API** (`/api/clan?endpoint=aggregates`). The clan point goal and per-hunter daily quota are still set in the page (`CLAN_GOAL`, `PER_DAY`) because the API does not send them. Cycle dates, roster, and cross-cycle history come from the payload.
+Scores, penalties, and the per-hunter requirement flag come from the **clan API** (`/api/clan?endpoint=aggregates`). Per-source chest breakdowns for Events, Chests, the overview chart, and player attribution come from `/api/clan?endpoint=chest-data` (fetched one day at a time). The clan point goal and per-hunter daily quota are still set in the page (`CLAN_GOAL`, `PER_DAY`) because the API does not send them. Cycle dates, roster, and cross-cycle history come from the aggregates payload. The dashboard auto-refreshes every 30 minutes.
 
 If the live fetch fails, the boot screen shows the error. Deployed on Netlify, the function reads `TBCP_API_KEY` from site env (not in the repo).
 

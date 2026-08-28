@@ -20,8 +20,11 @@ Live data comes from the **clan API** via the Netlify function at `/api/clan` (`
 
 Flow in `load()`:
 
-1. `fetch("/api/clan?endpoint=aggregates")`
-2. `buildState(payload, { goal, perDay })` → `STATE` (current cycle players, clan totals, pace, projection, status from `requirement_met`, `history` for prior cycles)
+1. `fetch("/api/clan?endpoint=aggregates")` — authoritative player totals
+2. `buildState(payload, { goal, perDay })` → `STATE`
+3. Per-day `fetch("/api/clan?endpoint=chest-data&from=&to=")` (parallel, under the 10k-row cap) → `mergeChestData()` replaces coarse Crypt/Citadel/Epic sources with real per-source breakdowns for Events, Chests, overview chart, and modal attribution
+
+Auto-refresh is every 30 minutes.
 
 Per-player **status** (`buildState()`):
 
