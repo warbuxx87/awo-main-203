@@ -10,69 +10,30 @@ Private clan tool: `noindex` in page meta and Netlify `X-Robots-Tag`.
 
 ## Data source
 
-Live data comes from a Google Sheet via the **gviz CSV endpoint**:
-
-| Constant | Value |
-|---|---|
-| `SHEET_ID` | `15p_q4io0lD6Cffv4kLzNw0YbwqB3P3ZfRdQfAUD5Tvw` |
-| Summary tab | `[AWO] Alpha Wolves` — event dates, per-day quota, point goal |
-| Matrix tab | `ChestMatrix` — per-player × per-source chest counts (**source of truth for scoring**) |
-| Points tab | `Points` — per-source point weight |
-
-URL pattern (see `gvizUrl()`):
+Live data comes from the **clan API** via the Netlify function at `/api/clan` (`netlify/functions/clan.js`). The dashboard fetches:
 
 ```
-https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tabName}
+/api/clan?endpoint=aggregates
 ```
 
-The sheet must be shared **Anyone with the link · Viewer** for live fetches to work.
-
-`ClanStat` is listed in `TABS` but **not fetched** — clan distribution is derived locally from the matrix.
-
-## Scoring (client-side)
-
-Scores are **recomputed in the browser**, not read from the summary tab's leaderboard `VALUE` column:
-
-```
-player points = Σ (ChestMatrix opens × Points weight)  for each source
-```
+`TBCP_API_KEY` is a Netlify env var — never commit it. Goal and per-hunter quota are page constants (`CLAN_GOAL`, `PER_DAY`); they are not in the API.
 
 Flow in `load()`:
 
-1. Fetch (or snapshot) CSV for summary, matrix, points.
-2. `parseSummary()` → `{ start, end, updated, perDay, goal }`
-3. `parseMatrix()` → `{ sources[], players[] }`
-4. `parsePoints()` → `Map(source → weight)`
-5. `compute()` → `STATE` (players, clan totals, pace, projection, status)
+1. `fetch("/api/clan?endpoint=aggregates")`
+2. `buildState(payload, { goal, perDay })` → `STATE` (current cycle players, clan totals, pace, projection, status from `requirement_met`, `history` for prior cycles)
 
-Per-player **status** (`compute()`):
+Per-player **status** (`buildState()`):
 
-- **Hunting** — pace ≥ `perDay` (default 4,000 pts/day)
-- **Lagging** — has points but pace below quota
+- **Hunting** — `requirement_met`
+- **Lagging** — has points but requirement not met
 - **Idle** — zero points
 
 Overview **pace-line**: gold fill = points banked; chrome notch = where the pack should be by elapsed time; projection = `clanValue / elapsed × totalDays`.
 
-## Summary tab parsing (gviz quirk)
-
-**Critical:** gviz CSV **drops row labels** (`Start`, `End`, `Updated`, etc.). They appear in the Sheets UI but not in the export — column A is often empty and dates arrive **positionally**.
-
-`parseSummary()` therefore:
-
-1. Stops scanning before a row containing `PLAYER` (leaderboard header).
-2. Collects cells matching a datetime-with-time regex (skips date-only rows like "Today").
-3. Takes the **last three** timestamps as Start, End, Updated (robust to extra date rows).
-4. Reads the first two positive numbers **after** the Updated row as `perDay` and `goal`.
-
-Do not revert to label-based `find("Start")` parsing — it silently fails on live gviz and breaks countdown + projection.
-
 ## Snapshot fallback
 
-`const SNAPSHOT = { summaryCsv, pointsCsv, matrixCsv }` near the top of the script holds **embedded CSV strings** captured from a real sheet state.
-
-- Live fetch is always tried first (`fetchCsv` on matrix + points, then summary).
-- If the network fetch fails entirely, all three tabs fall back to `SNAPSHOT` and `USING_SNAPSHOT = true`.
-- An amber banner (`renderBanner()`) warns when snapshot data is shown.
+`const SNAPSHOT` and the gviz parsers are still in `index.html` but **`load()` no longer uses them**. Live fetch is the clan API; failure shows the boot error screen.
 
 ### ⛔ Do not touch these blobs
 
@@ -84,14 +45,13 @@ Do not revert to label-based `find("Start")` parsing — it silently fails on li
 
 | Section | Functions / symbols |
 |---|---|
-| CONFIG | `SHEET_ID`, `TABS`, `ARCHIVE_SHEETS`, `FALLBACK_*`, `REFRESH_MS`, `SNAPSHOT` |
-| FETCH + PARSE | `gvizUrl`, `fetchCsv`, `parseCsv`, `parseSummary`, `parseMatrix`, `parsePoints` |
-| COMPUTE | `compute()` → `STATE` |
-| VIEWS | `viewOverview`, `viewLeaderboard`, `viewChests`, `viewHistory` |
+| CONFIG | `CLAN_GOAL`, `PER_DAY`, `EVENT_GROUPS`, `CHANGELOG`, `SNAPSHOT` |
+| STATE | `buildState()` → `STATE` |
+| VIEWS | `viewOverview`, `viewLeaderboard`, `viewEvents`, `viewChests`, `viewHistory` |
 | CHARTS | `renderDist` (gold = points, silver = opens), `renderAttr` |
 | MODAL | `openPlayer`, `closePlayer` |
-| ROUTER | hash routes: `#overview`, `#leaderboard`, `#chests`, `#history` |
-| LOAD | `load()`, 10 min auto-refresh, manual Refresh button |
+| ROUTER | hash routes: `#overview`, `#leaderboard`, `#events`, `#chests`, `#history` |
+| LOAD | `load()` → `/api/clan?endpoint=aggregates` |
 
 ## Views (hash routing)
 
@@ -99,20 +59,10 @@ Do not revert to label-based `find("Start")` parsing — it silently fails on li
 |---|---|---|
 | `#overview` | Overview | Goal hero + pace bar, KPIs, source chart (points/opens toggle), top 5 |
 | `#leaderboard` | The Pack | Full sortable table with quota mini-bars |
-| `#chests` | Chests | Sources ranked by contribution; wasted opens on 0-pt sources |
-| `#history` | History | Scaffold — empty until `ARCHIVE_SHEETS` has entries |
+| `#chests` | Chests | Crypt / Citadel / Epic ranked by contribution |
+| `#history` | History | Prior cycles from the API payload |
 
 Player rows / names open a **modal** with attribution chart and quota bar.
-
-## Recurring cycles (`ARCHIVE_SHEETS`)
-
-When a hunt ends, prepend to `ARCHIVE_SHEETS` (newest first):
-
-```js
-{ id: "<archivedSheetId>", label: "Jun 24 – Jul 1" }
-```
-
-History comparison UI is scaffolded; it activates once archives exist.
 
 ## CSS / brand notes
 
@@ -136,7 +86,7 @@ History comparison UI is scaffolded; it activates once archives exist.
 
 4. **Do not bump a version inside `index.html`** — there is no in-file version constant. Version lives in `CHANGELOG.md`, README badge, and git tags.
 
-5. **Test live vs snapshot** — deployed site should load without the amber snapshot banner; banner = live gviz was blocked.
+5. **Test live vs proxy** — deployed site should load via `/api/clan`; boot error = function missing, env key unset, or upstream failure.
 
 ## Deploy
 
@@ -147,6 +97,7 @@ Push to `main` → Netlify auto-deploys (~30s). No build command. Publish direct
 | File | Role |
 |---|---|
 | `index.html` | Entire app |
-| `netlify.toml` | Publish root, noindex header, SPA fallback |
+| `netlify/functions/clan.js` | Clan API proxy (`/api/clan`) |
+| `netlify.toml` | Publish root, noindex header, SPA fallback, API rewrite |
 | `CHANGELOG.md` | Release notes (Keep a Changelog + SemVer) |
 | `README.md` | User-facing overview |

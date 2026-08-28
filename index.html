@@ -342,6 +342,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.11.0", date:"2026-08-28", sections:[
+    { label:"Changed", items:["Run off the clan API via Netlify proxy — real penalties, requirement flag, cross-cycle history"] }
+  ]},
   { version:"1.10.0", date:"2026-08-03", sections:[
     { label:"Added", items:[
       "**Ragnar\u00f6k and Olympus** added to the Events tab. Tracked events: Ragnar\u00f6k, Dark Omens, Olympus, Rise of the Ancients, Union of Triumph. Hermes' Store counts toward Olympus; Epic J\u00f6rmungandr squad, J\u00f6rmungandr Shop, and Epic Fenrir squad count toward Ragnar\u00f6k. Union of Triumph event tab; Briareus \u2192 Olympus.",
@@ -438,12 +441,14 @@ const CHANGELOG_TAG_DATES = {
   "1.9.0":"2026-06-27","1.9.1":"2026-06-27","1.9.2":"2026-06-27","1.9.3":"2026-06-27",
   "1.9.4":"2026-06-27","1.9.5":"2026-06-27","1.9.6":"2026-06-27","1.9.7":"2026-06-27",
   "1.9.8":"2026-06-27","1.9.9":"2026-06-27","1.9.10":"2026-06-27","1.9.11":"2026-06-27",
-  "1.9.12":"2026-06-27","1.10.0":"2026-08-03"
+  "1.9.12":"2026-06-27","1.10.0":"2026-08-03","1.11.0":"2026-08-28"
 };
 function clDate(v){ return CHANGELOG_TAG_DATES[v.version]||v.date||""; }
 
 const FALLBACK_PER_DAY = 4000;     // per-hunter daily quota
 const FALLBACK_GOAL     = 100000;  // clan point goal
+const CLAN_GOAL = 100000;   // point goal (not in the API — set manually)
+const PER_DAY   = 4000;     // per-hunter daily quota (display only)
 const SCRAPE_INTERVAL    = 2 * 60 * 60 * 1000; // 2 hours
 const POST_SCRAPE_BUFFER = 2 * 60 * 1000;      // re-check ~2 min after the expected scrape
 const RETRY_MS           = 10 * 60 * 1000;     // late scrape / first load → re-check every 10 min until fresh
@@ -1124,16 +1129,34 @@ function viewChests(s){
 }
 
 function viewHistory(s){
-  if(!ARCHIVE_SHEETS.length){
+  const hist=s.history||[];
+  if(!hist.length){
     return '<div class="panel"><div class="empty">'
       +'<div class="ico"><svg width="40" height="40" style="color:var(--line)"><use href="#wolf"/></svg></div>'
       +'<p><b>'+t("hist.empty")+'</b></p>'
-      +'<p style="max-width:440px;margin:6px auto 0">'+tf("hist.emptyHelp",{code:'<code style="font-family:EB Garamond;color:var(--ice)">ARCHIVE_SHEETS</code>'})+'</p>'
       +'</div></div>';
   }
-  // Scaffold: archives present → selector + compare table would render here.
-  return '<div class="panel"><p class="eyebrow">'+tf("hist.pastHunts",{n:ARCHIVE_SHEETS.length})+'</p>'
-    +'<h2 class="sec">'+t("hist.cycleHistory")+'</h2><p class="dim">'+t("hist.detected")+'</p></div>';
+  const fmtD=v=>{
+    if(!v) return "—";
+    const d=v instanceof Date?v:new Date(v);
+    return isNaN(d)?String(v):d.toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"});
+  };
+  let rows="";
+  for(const h of hist){
+    rows+='<tr>'
+      +'<td class="l">'+esc(fmtD(h.start))+' – '+esc(fmtD(h.end))+'</td>'
+      +'<td class="num" style="color:var(--moon);font-weight:600">'+fmt(h.clanValue)+'</td>'
+      +'<td class="num">'+fmt(h.clanChests)+'</td>'
+      +'<td class="num">'+fmt(h.onQuota)+' / '+fmt(h.players)+'</td></tr>';
+  }
+  return '<div class="panel"><p class="eyebrow">'+tf("hist.pastHunts",{n:hist.length})+'</p>'
+    +'<h2 class="sec">'+t("hist.cycleHistory")+'</h2>'
+    +'<div class="tbl-wrap"><table><thead><tr>'
+    +'<th class="l">'+t("hist.cycleHistory")+'</th>'
+    +'<th>'+t("lb.colPoints")+'</th>'
+    +'<th>'+t("lb.colChests")+'</th>'
+    +'<th>'+t("status.hunting")+'</th>'
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
 }
 
 /* ============================================================
@@ -1398,25 +1421,66 @@ setInterval(tickClock,1000);
 /* ============================================================
    LOAD
    ============================================================ */
+function buildState(payload, opts = {}) {
+	const DAY = 86400000;
+	const goal = opts.goal ?? 100000, perDay = opts.perDay ?? 4000;
+	const now = opts.now ?? new Date(payload.generated_at || Date.now());
+	const rows = payload.data || [];
+	const cycles = new Map();
+	for (const r of rows) { if (!cycles.has(r.cycle_start)) cycles.set(r.cycle_start, []); cycles.get(r.cycle_start).push(r); }
+	const starts = [...cycles.keys()].sort();
+	const cur = cycles.get(starts[starts.length - 1]) || [];
+	const start = new Date(starts[starts.length - 1]);
+	const end = new Date(cur[0]?.cycle_end || start);
+	const total = Math.max((end - start) / DAY, 1);
+	const elapsed = Math.min(Math.max((now - start) / DAY, 0.01), total);
+	const daysLeft = Math.max(total - elapsed, 0);
+	const players = cur.map(r => {
+		const value = r.total_points || 0, count = r.total_chests || 0;
+		const bySource = [
+			{ src: "Crypt", cnt: r.crypt_chests || 0, w: 0, pts: r.crypt_points || 0 },
+			{ src: "Citadel", cnt: r.citadel_chests || 0, w: 0, pts: r.citadel_points || 0 },
+			{ src: "Epic", cnt: r.epic_chest_count || 0, w: 0, pts: Math.round(parseFloat(r.epic_points) || 0) }
+		].filter(s => s.pts > 0 || s.cnt > 0).sort((a, b) => b.pts - a.pts);
+		return {
+			name: r.player_name, value, count, counts: {},
+			eff: count ? value / count : 0, pace: value / elapsed,
+			status: r.requirement_met ? "hunt" : (value > 0 ? "lag" : "idle"),
+			bySource, wastedOpens: r.total_penalty_chests || 0,
+			penaltyChests: r.total_penalty_chests || 0, penaltyPoints: r.total_penalty_points || 0,
+			requirementMet: !!r.requirement_met, ancientKills: r.ancient_kills || 0, ancientVaults: r.ancient_vaults || 0
+		};
+	}).sort((a, b) => b.value - a.value || b.count - a.count);
+	players.forEach((p, i) => p.rank = i + 1);
+	const agg = { Crypt: { opens: 0, pts: 0 }, Citadel: { opens: 0, pts: 0 }, Epic: { opens: 0, pts: 0 } };
+	for (const r of cur) {
+		agg.Crypt.opens += r.crypt_chests || 0; agg.Crypt.pts += r.crypt_points || 0;
+		agg.Citadel.opens += r.citadel_chests || 0; agg.Citadel.pts += r.citadel_points || 0;
+		agg.Epic.opens += r.epic_chest_count || 0; agg.Epic.pts += Math.round(parseFloat(r.epic_points) || 0);
+	}
+	const sources = Object.entries(agg).map(([src, v]) => ({ src, opens: v.opens, w: 0, pts: v.pts })).filter(d => d.opens > 0).sort((a, b) => b.pts - a.pts);
+	const clanValue = players.reduce((s, p) => s + p.value, 0);
+	const clanChests = players.reduce((s, p) => s + p.count, 0);
+	const active = players.filter(p => p.value > 0).length;
+	const onQuota = players.filter(p => p.requirementMet).length;
+	const idle = players.filter(p => p.value === 0).length;
+	const history = starts.slice(0, -1).reverse().map(cs => {
+		const rs = cycles.get(cs);
+		return { start: cs, end: rs[0]?.cycle_end, clanValue: rs.reduce((s, r) => s + (r.total_points || 0), 0), clanChests: rs.reduce((s, r) => s + (r.total_chests || 0), 0), onQuota: rs.filter(r => r.requirement_met).length, players: rs.length };
+	});
+	return { summary: { start, end, updated: now, perDay, goal }, now, total, elapsed, daysLeft, players, sources, clanValue, clanChests, active, onQuota, idle, goalPct: Math.min(clanValue / goal * 100, 100), projected: clanValue / elapsed * total, history, clanPts: clanValue || 1, goalPacePct: Math.min(elapsed / total * 100, 100) };
+}
+
 async function load(){
   const btn=$("#refreshBtn"); btn&&btn.classList.add("spin");
   try{
-    let sum,mat,pts;
-    try{
-      [mat,pts]=await Promise.all([fetchCsv(TABS.matrix),fetchCsv(TABS.points)]);
-      sum=await fetchCsv(TABS.summary).catch(()=>parseCsv(SNAPSHOT.summaryCsv));
-      USING_SNAPSHOT=false;
-    }catch(netErr){
-      mat=parseCsv(SNAPSHOT.matrixCsv);
-      pts=parseCsv(SNAPSHOT.pointsCsv);
-      sum=parseCsv(SNAPSHOT.summaryCsv);
-      USING_SNAPSHOT=true;
-    }
-    STATE=compute(parseSummary(sum),parseMatrix(mat),parsePoints(pts));
+     const res = await fetch("/api/clan?endpoint=aggregates");
+     if (!res.ok) throw new Error("api " + res.status);
+     STATE = buildState(await res.json(), { goal: CLAN_GOAL, perDay: PER_DAY });
     $("#boot").classList.add("hidden");
     $("#app").classList.remove("hidden");
     renderBanner();
-    route(); tickClock();
+    route(); tickClock(); applyI18n();
     const key = STATE.summary.updated ? STATE.summary.updated.getTime() : null;
     const fresh = key!==null && lastUpdatedKey!==null && key!==lastUpdatedKey;
     lastUpdatedKey = key;
