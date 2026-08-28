@@ -342,6 +342,9 @@ const EVENT_GROUPS = [
 ];
 
 const CHANGELOG = [
+  { version:"1.12.1", date:"2026-08-28", sections:[
+    { label:"Changed", items:["Members: current-only + rename-proof matching by original name; tier row (Guardsman/Specialist/Monster/Engineer/Army Mod/Monster Bonus)"] }
+  ]},
   { version:"1.12.0", date:"2026-08-28", sections:[
     { label:"Added", items:["Player modal: might, VIP, hero level, tenure from /members"] }
   ]},
@@ -447,7 +450,7 @@ const CHANGELOG_TAG_DATES = {
   "1.9.0":"2026-06-27","1.9.1":"2026-06-27","1.9.2":"2026-06-27","1.9.3":"2026-06-27",
   "1.9.4":"2026-06-27","1.9.5":"2026-06-27","1.9.6":"2026-06-27","1.9.7":"2026-06-27",
   "1.9.8":"2026-06-27","1.9.9":"2026-06-27","1.9.10":"2026-06-27","1.9.11":"2026-06-27",
-  "1.9.12":"2026-06-27","1.10.0":"2026-08-03","1.11.0":"2026-08-28","1.11.1":"2026-08-28","1.12.0":"2026-08-28"
+  "1.9.12":"2026-06-27","1.10.0":"2026-08-03","1.11.0":"2026-08-28","1.11.1":"2026-08-28","1.12.0":"2026-08-28","1.12.1":"2026-08-28"
 };
 function clDate(v){ return CHANGELOG_TAG_DATES[v.version]||v.date||""; }
 
@@ -863,6 +866,10 @@ const I18N_MEM={
   tr:{"modal.might":"G\u00fc\u00e7","modal.hero":"Kahraman","modal.memberSince":"\u00dcye olma","modal.former":"Eski \u00fcye"}
 };
 for(const l in I18N_MEM){ if(I18N[l]) Object.assign(I18N[l],I18N_MEM[l]); }
+const I18N_TIER={
+  en:{"modal.tiers":"Tiers"}, es:{"modal.tiers":"Niveles"}, fr:{"modal.tiers":"Niveaux"}, it:{"modal.tiers":"Livelli"}, de:{"modal.tiers":"Stufen"}, nl:{"modal.tiers":"Niveaus"}, pl:{"modal.tiers":"Poziomy"}, ru:{"modal.tiers":"\u0423\u0440\u043e\u0432\u043d\u0438"}, ar:{"modal.tiers":"\u0627\u0644\u0645\u0633\u062a\u0648\u064a\u0627\u062a"}, tr:{"modal.tiers":"Seviyeler"}
+};
+for(const l in I18N_TIER){ if(I18N[l]) Object.assign(I18N[l],I18N_TIER[l]); }
 const I18N_FOOT={
   en:{"foot.note":"Live from {clan} via the clan API \u00b7 auto-refreshes every 30 min \u00b7 {motto}"},
   es:{"foot.note":"En vivo desde {clan} v\u00eda la API del clan \u00b7 se actualiza cada 30 min \u00b7 {motto}"},
@@ -982,12 +989,41 @@ function playerMeta(p){
   if(p.joinDate) parts.push(t("modal.memberSince")+" "+new Date(p.joinDate).toLocaleDateString("en-US",{month:"short",year:"numeric"}));
   return '<p class="dim" style="font-size:12px;margin:4px 2px 0">'+parts.join(" \u00b7 ")+'</p>';
 }
+function indexMembers(payload){
+  const idx={};
+  for(const m of (payload&&payload.data||[])){
+    idx[m.player_name]=m;
+    if(m.player_name_original) idx[m.player_name_original]=m;   // rename-proof
+  }
+  return idx;
+}
+function playerTiers(p){
+  if(!p.tiers) return "";
+  const x=p.tiers, L=[["Guardsman",x.g],["Specialist",x.s],["Monster",x.m],["Engineer",x.e],["Army Mod.",x.am],["Monster Bonus",x.mb]]
+    .filter(function(e){return e[1]!=null;}).map(function(e){return e[0]+" "+e[1];});
+  if(!L.length) return "";
+  return '<p class="dim" style="font-size:11px;margin:2px 2px 0"><b style="color:var(--silver)">'+t("modal.tiers")+'</b> '+L.join(" \u00b7 ")+'</p>';
+}
 function mergeMembers(state, payload){
-  const idx={}; for(const m of (payload&&payload.data||[])) idx[m.player_name]=m;
+  const idx=indexMembers(payload);
+  const hasMembers=Object.keys(idx).length>0;
   for(const p of state.players){
     const m=idx[p.name]; if(!m) continue;
+    p.memberId=m.player_id;
     p.might=m.might; p.vip=m.vip_level; p.heroLevel=m.hero_level;
     p.joinDate=m.join_date; p.memberStatus=m.status; p.nameOriginal=m.player_name_original;
+    p.tiers={g:m.g_level,s:m.s_level,m:m.m_level,e:m.e_level,am:m.am_level,mb:m.mb_level};
+  }
+  if(hasMembers){
+    state.players=state.players.filter(function(p){return p.memberId!=null && p.memberStatus!=="former";});
+    state.players.forEach(function(p,i){p.rank=i+1;});
+    state.clanValue=state.players.reduce(function(s,p){return s+p.value;},0);
+    state.clanChests=state.players.reduce(function(s,p){return s+p.count;},0);
+    state.active=state.players.filter(function(p){return p.value>0;}).length;
+    state.onQuota=state.players.filter(function(p){return p.requirementMet;}).length;
+    state.idle=state.players.filter(function(p){return p.value===0;}).length;
+    state.goalPct=Math.min(state.clanValue/state.summary.goal*100,100);
+    state.projected=state.clanValue/state.elapsed*state.total;
   }
   return state;
 }
@@ -1267,7 +1303,7 @@ function openPlayer(name){
 
   $("#modal").innerHTML=
     '<button class="x" id="mx">×</button>'
-    +'<p class="eyebrow">'+tf("modal.rank",{n:p.rank})+' · '+badge(p.status)+'</p>'+playerMeta(p)
+    +'<p class="eyebrow">'+tf("modal.rank",{n:p.rank})+' · '+badge(p.status)+'</p>'+playerMeta(p)+playerTiers(p)
     +'<h3 dir="auto">'+esc(p.name)+'</h3>'
     +'<div class="mrow">'
       +kpi(fmt(p.value),t("lb.colPoints"))+kpi(fmt(p.count),t("lb.colChests"))
@@ -1548,7 +1584,7 @@ async function load(){
      fetch(`/api/clan?endpoint=chest-data&from=${day}&to=${day}`)
        .then(r=>r.ok?r.json():{data:[]}).catch(()=>({data:[]}))));
    mergeChestData(STATE, parts.flatMap(j=>j.data||[]));
-     try { const mr=await fetch("/api/clan?endpoint=members&include_former=true");
+     try { const mr=await fetch("/api/clan?endpoint=members&include_former=false");
            if(mr.ok) mergeMembers(STATE, await mr.json()); } catch(e){}
     $("#boot").classList.add("hidden");
     $("#app").classList.remove("hidden");

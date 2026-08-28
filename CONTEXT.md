@@ -23,7 +23,7 @@ Flow in `load()`:
 1. `fetch("/api/clan?endpoint=aggregates")` — authoritative player totals
 2. `buildState(payload, { goal, perDay })` → `STATE`
 3. Per-day `fetch("/api/clan?endpoint=chest-data&from=&to=")` (parallel, under the 10k-row cap) → `mergeChestData()` replaces coarse Crypt/Citadel/Epic sources with real per-source breakdowns for Events, Chests, overview chart, and modal attribution
-4. `fetch("/api/clan?endpoint=members&include_former=true")` → `mergeMembers()` (might, VIP, hero, tenure on the player modal; failure is ignored)
+4. `fetch("/api/clan?endpoint=members&include_former=false")` → `mergeMembers()` (current members only; rename-proof via `player_name_original`; might/VIP/hero/tenure/tiers on the player modal; failure is ignored)
 
 Auto-refresh is every 30 minutes.
 
