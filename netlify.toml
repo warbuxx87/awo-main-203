@@ -9,8 +9,15 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
 
+# Clan API proxy — must sit above the SPA fallback so /api/clan is not rewritten.
+[[redirects]]
+  from = "/api/clan"
+  to = "/.netlify/functions/clan"
+  status = 200
+
 # Single-page app fallback: any path serves the dashboard.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
