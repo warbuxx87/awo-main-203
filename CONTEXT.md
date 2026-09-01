@@ -16,7 +16,7 @@ Live data comes from the **clan API** via the Netlify function at `/api/clan` (`
 /api/clan?endpoint=aggregates
 ```
 
-`TBCP_API_KEY` is a Netlify env var — never commit it. Goal and per-hunter quota are page constants (`CLAN_GOAL`, `PER_DAY`); they are not in the API.
+`TBCP_API_KEY` is a Netlify env var — never commit it. Per-member goal (`PER_MEMBER_GOAL`) and per-hunter daily pace (`PER_DAY`) are page constants; they are not in the API. Clan goal = `PER_MEMBER_GOAL` × member count.
 
 Flow in `load()`:
 
@@ -49,7 +49,7 @@ Overview **pace-line**: gold fill = points banked; chrome notch = where the pack
 
 | Section | Functions / symbols |
 |---|---|
-| CONFIG | `CLAN_GOAL`, `PER_DAY`, `EVENT_GROUPS`, `CHANGELOG`, `SNAPSHOT` |
+| CONFIG | `PER_MEMBER_GOAL`, `PER_DAY`, `EVENT_GROUPS`, `CHANGELOG`, `SNAPSHOT` |
 | STATE | `buildState()` → `STATE` |
 | VIEWS | `viewOverview`, `viewLeaderboard`, `viewEvents`, `viewChests`, `viewHistory` |
 | CHARTS | `renderDist` (gold = points, silver = opens), `renderAttr` |
