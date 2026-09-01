@@ -1559,6 +1559,8 @@ function aggregateChestData(rows){
     (byPlayer[name].bySource[src] ??= {src,cnt:0,pts:0,w:0});
     byPlayer[name].bySource[src].cnt++; byPlayer[name].bySource[src].pts+=pts;
   }
+  for(const d of Object.values(bySrc)) d.w = d.opens ? Math.round(d.pts/d.opens) : 0;
+  for(const name in byPlayer) for(const d of Object.values(byPlayer[name].bySource)) d.w = d.cnt ? Math.round(d.pts/d.cnt) : 0;
   return {bySrc,byPlayer};
 }
 function mergeChestData(state, rows){
